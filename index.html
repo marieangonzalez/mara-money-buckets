@@ -21,7 +21,7 @@
   --surface: #fffaff;
   --pale: #f9eafa;
   --display: Georgia, "Times New Roman", serif;
-  --sticker-font: "Mara Shooting Star", "Shooting Star - personal use", var(--display);
+  --sticker-font: "Mara Uploaded Font", "Mara Shooting Star", "Shooting Star - personal use", var(--display);
   --body-font: "Segoe UI", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
@@ -423,6 +423,10 @@ main > details > summary > h2 { vertical-align: middle; }
 <summary><h2>Configurar categorías y reparto</h2></summary>
 <p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Escribe directamente los porcentajes que quieras usar. Deben sumar 100%. El cambio se aplica a los ingresos nuevos.</p>
 <div id="configuration"></div>
+<h3>Letra del título y los encabezados</h3>
+<p class="muted">Selecciona Shooting Star.ttf en este dispositivo. La letra se guarda solo en este navegador.</p>
+<label>Archivo de fuente <input id="sticker-font-file" type="file" accept=".ttf,.otf,font/ttf,font/otf"></label>
+<p id="sticker-font-status" class="muted" aria-live="polite"></p>
 </details>
 <details>
 <summary><h2>Respaldo y recuperación</h2></summary>
@@ -1069,6 +1073,58 @@ el('backup').addEventListener('change',async event => {
     say('No se importó el respaldo. '+error.message,true);
   }
 });
+const fontKey = 'mara-money-sticker-font-v1';
+const maxFontBytes = 512 * 1024;
+let activeStickerFont;
+async function loadStickerFont(bytes) {
+  const format = new DataView(bytes);
+  if (bytes.byteLength < 12 || bytes.byteLength > maxFontBytes
+      || ![0x00010000,0x4f54544f].includes(format.getUint32(0))) {
+    throw Error('Selecciona un archivo de fuente TTF u OTF válido.');
+  }
+  const font = new FontFace('Mara Uploaded Font',bytes);
+  await font.load();
+  if (activeStickerFont) document.fonts.delete(activeStickerFont);
+  document.fonts.add(font);
+  activeStickerFont = font;
+}
+async function restoreStickerFont() {
+  try {
+    const encoded = localStorage.getItem(fontKey);
+    if (!encoded) return;
+    if (encoded.length > Math.ceil(maxFontBytes/3)*4) throw Error('Fuente demasiado grande.');
+    await loadStickerFont(Uint8Array.from(atob(encoded),char => char.charCodeAt(0)).buffer);
+    el('sticker-font-status').textContent = 'Letra cargada en este navegador.';
+  } catch {
+    el('sticker-font-status').textContent = 'Vuelve a seleccionar el archivo de la fuente.';
+  }
+}
+const fontInput = el('sticker-font-file');
+fontInput.addEventListener('change',async () => {
+  const file = fontInput.files[0];
+  fontInput.value = '';
+  if (!file) return;
+  fontInput.disabled = true;
+  const status = el('sticker-font-status');
+  try {
+    if (file.size > maxFontBytes) throw Error('El archivo de la fuente supera el límite de 512 KB.');
+    const bytes = await file.arrayBuffer();
+    await loadStickerFont(bytes);
+    let raw = '';
+    for (const byte of new Uint8Array(bytes)) raw += String.fromCharCode(byte);
+    try {
+      localStorage.setItem(fontKey,btoa(raw));
+      status.textContent = 'Letra aplicada y guardada en este navegador.';
+    } catch {
+      status.textContent = 'Letra aplicada por ahora. El navegador no pudo guardarla.';
+    }
+  } catch (error) {
+    status.textContent = 'No se pudo cargar la letra. '+error.message;
+  } finally {
+    fontInput.disabled = false;
+  }
+});
+restoreStickerFont();
 window.addEventListener('storage',event => {
   if ((event.key === key || event.key === null) && event.newValue !== stored) {
     say('Los datos cambiaron en otra pestaña. Recarga esta página antes de continuar.',true);
