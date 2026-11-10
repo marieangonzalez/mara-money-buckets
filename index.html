@@ -279,6 +279,14 @@ main > details > summary > h2 { vertical-align: middle; }
 .chip-negative { --chip-bg: #ffd8de; --chip-ink: #791b31; --chip-shadow: #d98597; }
 .transfer-action { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
+
+/* Cloud sign-in */
+#cloud-access { grid-column: 1 / -1; border-top: 4px solid #9e67de; }
+#cloud-access form { margin-top: 12px; }
+#cloud-access input { width: min(100%, 340px); }
+#cloud-access .cloud-message { font-weight: 650; }
+body.cloud-locked main > :not(#cloud-access):not(#status) { display:none !important; }
+body.cloud-locked .quick-links { display:none; }
 </style>
 </head>
 <body>
@@ -333,6 +341,28 @@ main > details > summary > h2 { vertical-align: middle; }
 </nav>
 </div>
 <main>
+<section id="cloud-access" aria-labelledby="cloud-title">
+<h2 id="cloud-title">Mi cuenta · Mara Money</h2>
+<p id="cloud-state" class="cloud-message" role="status" aria-live="polite">Conectando con Supabase…</p>
+<div id="cloud-login">
+  <p class="muted">Inicia sesión para recuperar tus datos desde la nube. Si todavía no tienes una cuenta, créala con tu correo electrónico.</p>
+  <form id="cloud-form">
+    <label>Correo electrónico <input id="cloud-email" type="email" autocomplete="email" required></label>
+    <label>Contraseña <input id="cloud-password" type="password" autocomplete="current-password" minlength="6" required></label>
+    <button type="submit" id="cloud-signin">Iniciar sesión</button>
+    <button type="button" class="secondary" id="cloud-signup">Crear cuenta</button>
+  </form>
+  <p class="muted">Si confirmas tu correo por email, regresa a esta página para iniciar sesión.</p>
+</div>
+<div id="cloud-logged" hidden>
+  <p id="cloud-user" class="muted"></p>
+  <div class="actions">
+    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
+    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
+  </div>
+  <p class="muted">Al iniciar por primera vez, usa «Respaldo y recuperación» para importar el JSON que descargaste. Nunca se importa automáticamente el historial anterior.</p>
+</div>
+</section>
 <section id="income" aria-labelledby="entry-title">
 <h2 id="entry-title">Registrar ingreso</h2>
 <p id="plan" class="note"></p>
@@ -430,11 +460,12 @@ main > details > summary > h2 { vertical-align: middle; }
 </details>
 <details>
 <summary><h2>Respaldo y recuperación</h2></summary>
-<p class="muted">Los datos se guardan en este navegador. Exporta un respaldo para conservarlos o abrirlos en otro equipo. Importar reemplaza la configuración y el historial de esta copia.</p>
+<p class="muted">Tus datos se sincronizan con tu cuenta de Supabase cuando aparece «Guardado en la nube». Exporta un respaldo adicional. Importar reemplaza los datos de esta cuenta; espera la confirmación de sincronización.</p>
 <div class="actions"><button id="export" type="button">Exportar respaldo JSON</button><label>Archivo de respaldo <input id="backup" type="file" accept=".json,application/json"></label></div>
 </details>
 <p id="status" class="note" role="status" aria-live="polite"></p>
 </main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 'use strict';
 const accounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
@@ -570,28 +601,93 @@ let state = initial();
 let stored = null;
 let ready = false;
 let unreadable = false;
-try {
-  stored = localStorage.getItem(key);
-  if (stored !== null) state = validate(JSON.parse(stored));
-  else {
-    stored = JSON.stringify(state);
-    localStorage.setItem(key,stored);
-  }
+let cloudClient = null;
+let cloudUser = null;
+let cloudPending = null;
+let cloudWriting = false;
+let cloudFailed = false;
+let cloudEpoch = 0;
+const cloudUrl = 'https://qkasvabnygwlfqagafqd.supabase.co';
+const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
+// Original browser data is read but never automatically uploaded or overwritten.
+try { stored = localStorage.getItem(key); } catch { /* Safari may restrict localStorage */ }
+function cloudMessage(message,error=false) {
+  el('cloud-state').textContent = message;
+  el('cloud-state').classList.toggle('error',error);
+}
+function cloudLock() {
+  ready = false;
+  document.body.classList.add('cloud-locked');
+  el('cloud-login').hidden = false;
+  el('cloud-logged').hidden = true;
+  el('cloud-retry').hidden = true;
+}
+function cloudUnlock() {
+  document.body.classList.remove('cloud-locked');
+  el('cloud-login').hidden = true;
+  el('cloud-logged').hidden = false;
+  el('cloud-user').textContent = 'Sesión: ' + cloudUser.email;
   ready = true;
-} catch {
-  unreadable = stored !== null && stored !== JSON.stringify(state);
-  say(unreadable ? 'Los datos locales no se pudieron leer. Puedes recuperar la aplicación importando un respaldo válido.' : 'Este navegador no permite guardar los datos de este archivo. Habilita el almacenamiento local y vuelve a abrirlo.',true);
+  renderSettings(); renderOpening(); render();
+}
+async function cloudLoad(user) {
+  const epoch = ++cloudEpoch;
+  cloudLock();
+  cloudUser = user;
+  cloudPending = null;
+  cloudFailed = false;
+  cloudMessage('Cargando tus datos desde Supabase…');
+  try {
+    const {data,error} = await cloudClient.from('mara_money_data').select('data').eq('user_id',user.id).maybeSingle();
+    if (error) throw error;
+    if (epoch !== cloudEpoch) return;
+    state = data ? validate(data.data) : initial();
+    cloudUnlock();
+    cloudMessage(data ? 'Datos recuperados de la nube ✓' : 'Cuenta lista. Todavía no hay datos en la nube; importa tu respaldo JSON para recuperar tu historial.');
+  } catch (error) {
+    if (epoch !== cloudEpoch) return;
+    cloudMessage('No se pudo cargar la nube: '+error.message+'. Revisa tu conexión y vuelve a iniciar sesión.',true);
+  }
+}
+async function cloudFlush() {
+  if (cloudWriting || !cloudPending || !cloudUser) return;
+  cloudWriting = true;
+  const epoch = cloudEpoch;
+  try {
+    while (cloudPending && epoch === cloudEpoch) {
+      const payload = cloudPending;
+      cloudPending = null;
+      const {error} = await cloudClient.from('mara_money_data').upsert({user_id:cloudUser.id,data:payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      if (error) throw error;
+    }
+    if (epoch === cloudEpoch) {
+      cloudFailed = false;
+      el('cloud-retry').hidden = true;
+      cloudMessage('Guardado en la nube ✓');
+    }
+  } catch (error) {
+    if (epoch === cloudEpoch) {
+      if (!cloudPending) cloudPending = state;
+      cloudFailed = true;
+      el('cloud-retry').hidden = false;
+      cloudMessage('Sin sincronizar: '+error.message+'. No cierres esta pestaña; toca «Reintentar sincronización».',true);
+    }
+  } finally {
+    cloudWriting = false;
+    if (cloudPending && !cloudFailed && epoch === cloudEpoch) void cloudFlush();
+  }
 }
 function save(next,recover=false) {
+  if (!ready || !cloudUser || cloudFailed) {
+    say('No se guardó el cambio. Inicia sesión o reintenta la sincronización pendiente.',true);
+    return false;
+  }
   try {
-    if (!ready && !(recover && unreadable)) throw Error('El almacenamiento local no está disponible.');
-    if (localStorage.getItem(key) !== stored) throw Error('Otra pestaña actualizó los datos. Recarga esta página antes de guardar.');
-    const serialized = JSON.stringify(next);
-    localStorage.setItem(key,serialized);
-    stored = serialized;
-    state = next;
-    ready = true;
-    unreadable = false;
+    const checked = validate(next);
+    state = checked;
+    cloudPending = checked;
+    cloudMessage('Sincronizando cambios…');
+    void cloudFlush();
     return true;
   } catch (error) {
     say('No se guardó el cambio. '+error.message,true);
@@ -1125,14 +1221,60 @@ fontInput.addEventListener('change',async () => {
   }
 });
 restoreStickerFont();
-window.addEventListener('storage',event => {
-  if ((event.key === key || event.key === null) && event.newValue !== stored) {
-    say('Los datos cambiaron en otra pestaña. Recarga esta página antes de continuar.',true);
-  }
-});
+// Do not expose the dashboard until authentication and cloud loading complete.
+cloudLock();
 renderSettings();
 renderOpening();
 render();
+el('cloud-form').addEventListener('submit',async event => {
+  event.preventDefault();
+  if (!cloudClient) return cloudMessage('No se cargó Supabase. Revisa tu conexión y recarga.',true);
+  cloudMessage('Iniciando sesión…');
+  const {error} = await cloudClient.auth.signInWithPassword({email:el('cloud-email').value.trim(),password:el('cloud-password').value});
+  if (error) cloudMessage('No se pudo iniciar sesión: '+error.message,true);
+  el('cloud-password').value = '';
+});
+el('cloud-signup').addEventListener('click',async () => {
+  if (!el('cloud-email').reportValidity() || !el('cloud-password').reportValidity()) return;
+  if (!cloudClient) return cloudMessage('No se cargó Supabase. Recarga la página.',true);
+  cloudMessage('Creando cuenta…');
+  const {data,error} = await cloudClient.auth.signUp({email:el('cloud-email').value.trim(),password:el('cloud-password').value,options:{emailRedirectTo:location.origin+location.pathname}});
+  el('cloud-password').value = '';
+  cloudMessage(error ? 'No se pudo crear la cuenta: '+error.message : data.session ? 'Cuenta creada. Cargando tus datos…' : 'Revisa tu correo y confirma la cuenta. Después inicia sesión.',!!error);
+});
+el('cloud-signout').addEventListener('click',async () => {
+  if (cloudPending || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
+  await cloudClient.auth.signOut();
+});
+el('cloud-retry').addEventListener('click',() => {
+  if (!cloudUser) return;
+  cloudFailed = false;
+  cloudMessage('Reintentando sincronización…');
+  void cloudFlush();
+});
+window.addEventListener('beforeunload',event => {
+  if (cloudPending || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
+});
+(async () => {
+  if (!window.supabase?.createClient) return cloudMessage('No se pudo cargar la librería de Supabase. Verifica Internet y recarga.',true);
+  try {
+    cloudClient = window.supabase.createClient(cloudUrl,cloudPublicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    cloudClient.auth.onAuthStateChange((event,session) => {
+      if (event === 'SIGNED_OUT') {
+        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudFailed = false;
+        state = initial(); cloudLock(); renderSettings(); renderOpening(); render();
+        cloudMessage('Inicia sesión para ver tus datos.');
+      } else if (event === 'SIGNED_IN' && session?.user && session.user.id !== cloudUser?.id) {
+        // Avoid invoking Supabase queries inside the auth callback.
+        setTimeout(() => void cloudLoad(session.user),0);
+      }
+    });
+    const {data,error} = await cloudClient.auth.getSession();
+    if (error) throw error;
+    if (data.session?.user && !cloudUser) await cloudLoad(data.session.user);
+    else if (!data.session) cloudMessage('Inicia sesión o crea tu cuenta.');
+  } catch (error) { cloudMessage('Error de conexión: '+error.message,true); }
+})();
 </script>
 </body>
 </html>
