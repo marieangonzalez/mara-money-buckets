@@ -223,7 +223,8 @@ main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e2547
 #moves { border-top: 4px solid #9e67de; }
 #spending { border-top: 4px solid #afc94d; }
 
-#financial-analysis { grid-column: 1 / -1; }
+#financial-analysis, #credit-cards { grid-column: 1 / -1; }
+#card-form { margin-top: 12px; }
 .analysis-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .analysis-metrics > div { padding: 10px 13px; border-radius: 11px; background: var(--pale); }
 .analysis-metrics dt { color: var(--muted); font-size: .9rem; }
@@ -335,9 +336,11 @@ body.cloud-locked .quick-links { display:none; }
   <a href="#spending">Gastos</a>
   <a href="#moves">Transferencias</a>
   <a href="#account-balances">Saldos</a>
+  <a href="#credit-cards">Tarjetas</a>
   <a href="#history-section">Historial</a>
   <a href="#projection-title">Análisis</a>
   <a href="#report-title">Reportes</a>
+  <a href="#backup-section">Respaldo y sesión</a>
 </nav>
 </div>
 <main>
@@ -353,14 +356,6 @@ body.cloud-locked .quick-links { display:none; }
     <button type="button" class="secondary" id="cloud-signup">Crear cuenta</button>
   </form>
   <p class="muted">Si confirmas tu correo por email, regresa a esta página para iniciar sesión.</p>
-</div>
-<div id="cloud-logged" hidden>
-  <p id="cloud-user" class="muted"></p>
-  <div class="actions">
-    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
-    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
-  </div>
-  <p class="muted">Al iniciar por primera vez, usa «Respaldo y recuperación» para importar el JSON que descargaste. Nunca se importa automáticamente el historial anterior.</p>
 </div>
 </section>
 <section id="income" aria-labelledby="entry-title">
@@ -413,6 +408,41 @@ body.cloud-locked .quick-links { display:none; }
 <form id="opening-form" style="display:block"></form>
 </details>
 </section>
+<section id="credit-cards" aria-labelledby="cards-title">
+<h2 id="cards-title">Tarjetas de crédito</h2>
+<p class="muted">Registra el saldo que ya debes y añade solo los movimientos que aún no estén incluidos en ese saldo. Los pagos se registran por separado de los gastos bancarios.</p>
+<p id="card-summary" aria-live="polite"></p>
+<div id="card-balances"></div>
+<details id="card-editor" class="spaced">
+<summary>Añadir o editar una tarjeta</summary>
+<form id="card-form" autocomplete="off">
+<label>Tarjeta <select name="card" aria-label="Tarjeta para editar"></select></label>
+<label>Nombre <input name="label" maxlength="60" required></label>
+<label>Banco <input name="bank" maxlength="60"></label>
+<label>Últimos cuatro dígitos <input name="lastFour" inputmode="numeric" maxlength="4" pattern="[0-9]{4}"></label>
+<label>Saldo inicial ($) <input name="opening" inputmode="decimal" value="0" required></label>
+<label>Límite de crédito ($) <input name="limit" inputmode="decimal" required></label>
+<label>Tasa anual (APR %) <input name="apr" inputmode="decimal"></label>
+<label>Pago mínimo ($) <input name="minimum" inputmode="decimal"></label>
+<label>Próximo vencimiento <input name="due" type="date"></label>
+<button type="submit">Guardar tarjeta</button>
+<button type="button" id="remove-card" class="secondary" hidden>Eliminar tarjeta</button>
+</form>
+</details>
+<div id="card-activity" hidden>
+<h3>Registrar movimiento</h3>
+<form id="card-movement-form" autocomplete="off">
+<label>Tarjeta <select name="card" required></select></label>
+<label>Fecha <input name="day" type="date" required></label>
+<label>Tipo <select name="kind"></select></label>
+<label>Importe ($) <input name="amount" inputmode="decimal" required></label>
+<label>Concepto (opcional) <input name="note" maxlength="120"></label>
+<button type="submit">Registrar movimiento</button>
+</form>
+<h3>Historial de la tarjeta seleccionada</h3>
+<div id="card-history"></div>
+</div>
+</section>
 <section id="history-section" aria-labelledby="history-title">
 <h2 id="history-title">Historial de ingresos y transferencias</h2>
 <p class="muted">Abre un día para revisar el reparto. Actualiza el estado aquí después de mover el dinero en tu banco.</p>
@@ -458,9 +488,17 @@ body.cloud-locked .quick-links { display:none; }
 <label>Archivo de fuente <input id="sticker-font-file" type="file" accept=".ttf,.otf,font/ttf,font/otf"></label>
 <p id="sticker-font-status" class="muted" aria-live="polite"></p>
 </details>
-<details>
+<details id="backup-section">
 <summary><h2>Respaldo y recuperación</h2></summary>
 <p class="muted">Tus datos se sincronizan con tu cuenta de Supabase cuando aparece «Guardado en la nube». Exporta un respaldo adicional. Importar reemplaza los datos de esta cuenta; espera la confirmación de sincronización.</p>
+<div id="cloud-logged" hidden>
+  <p id="cloud-user" class="muted"></p>
+  <p id="cloud-sync-state" role="status" aria-live="polite"></p>
+  <div class="actions">
+    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
+    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
+  </div>
+</div>
 <div class="actions"><button id="export" type="button">Exportar respaldo JSON</button><label>Archivo de respaldo <input id="backup" type="file" accept=".json,application/json"></label></div>
 </details>
 <p id="status" class="note" role="status" aria-live="polite"></p>
@@ -480,7 +518,7 @@ const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[]});
+const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[]});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
@@ -526,6 +564,34 @@ function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTra
     expected[move.destination] += move.amount;
   }
   return {posted,expected};
+}
+const cardKinds = new Map([
+  ['purchase','Compra'], ['payment','Pago'], ['interest','Interés'],
+  ['fee','Cargo'], ['refund','Devolución']
+]);
+function validateCards(cards) {
+  if (!Array.isArray(cards) || cards.length > maxEntries) throw Error('La lista de tarjetas no es válida.');
+  return cards.map(card => {
+    if (!card || typeof card.label !== 'string' || !card.label.trim() || card.label.length > 60
+        || typeof card.bank !== 'string' || card.bank.length > 60
+        || typeof card.lastFour !== 'string' || !/^(?:[0-9]{4})?$/.test(card.lastFour)
+        || !boundedInt(card.opening,0,maxIncome) || !boundedInt(card.limit,1,maxIncome)
+        || !(card.apr === null || boundedInt(card.apr,0,100000))
+        || !(card.minimum === null || boundedInt(card.minimum,0,maxIncome))
+        || !(card.due === '' || validDay(card.due))
+        || !Array.isArray(card.movements) || card.movements.length > maxEntries) {
+      throw Error('Revisa los datos de la tarjeta. El límite debe ser mayor que cero.');
+    }
+    const movements = card.movements.map(move => {
+      if (!move || !cardKinds.has(move.kind) || !validDay(move.day)
+          || !boundedInt(move.amount,1,maxIncome) || typeof move.note !== 'string' || move.note.length > 120) {
+        throw Error('Revisa la fecha, el tipo y el importe del movimiento de tarjeta.');
+      }
+      return {kind:move.kind,day:move.day,amount:move.amount,note:move.note};
+    });
+    return {label:card.label,bank:card.bank,lastFour:card.lastFour,opening:card.opening,limit:card.limit,
+      apr:card.apr,minimum:card.minimum,due:card.due,movements};
+  });
 }
 function validate(data) {
   if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates)
@@ -574,7 +640,8 @@ function validate(data) {
     }
     return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
-  return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers};
+  return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
+    creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : [])};
 }
 
 const el = id => document.getElementById(id);
@@ -612,19 +679,25 @@ const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
 // Original browser data is read but never automatically uploaded or overwritten.
 try { stored = localStorage.getItem(key); } catch { /* Safari may restrict localStorage */ }
 function cloudMessage(message,error=false) {
-  el('cloud-state').textContent = message;
-  el('cloud-state').classList.toggle('error',error);
+  const status = el(ready ? 'cloud-sync-state' : 'cloud-state');
+  status.textContent = message;
+  status.classList.toggle('error',error);
 }
 function cloudLock() {
   ready = false;
   document.body.classList.add('cloud-locked');
-  el('cloud-login').hidden = false;
+  el('cloud-access').hidden = false;
+  el('backup-section').open = false;
+  el('cloud-user').textContent = '';
+  el('cloud-sync-state').textContent = '';
   el('cloud-logged').hidden = true;
+  say('');
   el('cloud-retry').hidden = true;
+  resetCardForms();
 }
 function cloudUnlock() {
   document.body.classList.remove('cloud-locked');
-  el('cloud-login').hidden = true;
+  el('cloud-access').hidden = true;
   el('cloud-logged').hidden = false;
   el('cloud-user').textContent = 'Sesión: ' + cloudUser.email;
   ready = true;
@@ -670,11 +743,13 @@ async function cloudFlush() {
       if (!cloudPending) cloudPending = state;
       cloudFailed = true;
       el('cloud-retry').hidden = false;
+      el('backup-section').open = true;
+      say('Hay cambios sin sincronizar. Usa «Reintentar sincronización» en Respaldo y sesión.',true);
       cloudMessage('Sin sincronizar: '+error.message+'. No cierres esta pestaña; toca «Reintentar sincronización».',true);
     }
   } finally {
     cloudWriting = false;
-    if (cloudPending && !cloudFailed && epoch === cloudEpoch) void cloudFlush();
+    if (cloudPending && !cloudFailed) void cloudFlush();
   }
 }
 function save(next,recover=false) {
@@ -926,6 +1001,7 @@ function render(openDay) {
   renderHistory(openDay);
   renderExpenses();
   renderProjection();
+  renderCards();
 }
 function renderSettings() {
   const accountRows = accounts.map((name,index) => row([name,
@@ -950,6 +1026,139 @@ function localDay() {
   const today = new Date();
   return [today.getFullYear(),today.getMonth()+1,today.getDate()].map(part => String(part).padStart(2,'0')).join('-');
 }
+const cardForm = el('card-form');
+const cardFields = cardForm.elements;
+const movementForm = el('card-movement-form');
+const movementFields = movementForm.elements;
+const cardName = card => [card.label,card.bank,card.lastFour && '•••• '+card.lastFour].filter(Boolean).join(' · ');
+const cardBalance = card => card.opening + sum(card.movements.map(({kind,amount}) =>
+  kind === 'payment' || kind === 'refund' ? -amount : amount));
+const selectedCard = field => field.value === '' ? -1 : Number(field.value);
+const amountText = amount => amount === null ? '' : (amount/100).toFixed(2);
+const optionalAmount = field => field.value.trim() === '' ? null : units(field.value);
+
+function resetCardForms() {
+  cardForm.reset();
+  cardFields.card.value = '';
+  el('card-editor').open = false;
+  el('remove-card').hidden = true;
+  movementForm.reset();
+  movementFields.card.value = '';
+  movementFields.day.value = localDay();
+  el('card-history').textContent = '';
+  el('card-balances').textContent = '';
+  el('card-summary').textContent = '';
+}
+function fillCardForm() {
+  const card = state.creditCards[selectedCard(cardFields.card)];
+  cardFields.label.value = card?.label ?? '';
+  cardFields.bank.value = card?.bank ?? '';
+  cardFields.lastFour.value = card?.lastFour ?? '';
+  cardFields.opening.value = amountText(card?.opening ?? 0);
+  cardFields.limit.value = amountText(card?.limit ?? null);
+  cardFields.apr.value = amountText(card?.apr ?? null);
+  cardFields.minimum.value = amountText(card?.minimum ?? null);
+  cardFields.due.value = card?.due ?? '';
+  el('remove-card').hidden = !card;
+}
+function renderCardHistory() {
+  const card = state.creditCards[selectedCard(movementFields.card)];
+  const rows = (card?.movements ?? []).map((move,index) => ({move,index}))
+    .sort((a,b) => b.move.day.localeCompare(a.move.day) || b.index-a.index)
+    .map(({move,index}) => row([move.day,cardKinds.get(move.kind),cash(move.amount),safe(move.note),
+      '<button type="button" class="secondary" data-remove-movement="'+index+'" aria-label="Eliminar movimiento del '+move.day+'">Eliminar</button>']));
+  el('card-history').innerHTML = rows.length ? table(['Fecha','Tipo','Importe','Concepto','Acción'],rows)
+    : '<p class="muted">Todavía no hay movimientos para esta tarjeta.</p>';
+}
+function renderCards() {
+  const cards = state.creditCards;
+  const editing = selectedCard(cardFields.card);
+  const activity = selectedCard(movementFields.card);
+  const choices = cards.map((card,index) => '<option value="'+index+'">'+safe(cardName(card))+'</option>').join('');
+  cardFields.card.innerHTML = '<option value="">Nueva tarjeta</option>'+choices;
+  cardFields.card.value = cards[editing] ? String(editing) : '';
+  movementFields.card.innerHTML = choices;
+  movementFields.card.value = cards[activity] ? String(activity) : cards.length ? '0' : '';
+  el('card-activity').hidden = cards.length === 0;
+  const balances = cards.map(cardBalance);
+  const debt = sum(balances.map(balance => Math.max(0,balance)));
+  const paid = sum(cards.map(card => sum(card.movements.filter(move => move.kind === 'payment').map(move => move.amount))));
+  el('card-summary').textContent = cards.length ? 'Deuda total '+money(debt)+' · Pagos registrados '+money(paid)
+    : 'Todavía no tienes tarjetas registradas.';
+  el('card-balances').innerHTML = cards.length ? table(
+    ['Tarjeta','Saldo actual','Límite','Crédito disponible','Uso','APR','Pago mínimo','Vencimiento'],
+    cards.map((card,index) => {
+      const balance = balances[index];
+      return row([safe(cardName(card)),balance < 0 ? cash(-balance)+' a favor' : cash(balance),
+        cash(card.limit),cash(Math.max(0,card.limit-balance)),pct(Math.round(Math.max(0,balance)/card.limit*10000)),
+        card.apr === null ? '—' : pct(card.apr),card.minimum === null ? '—' : cash(card.minimum),card.due || '—']);
+    })) : '';
+  renderCardHistory();
+}
+function saveCards(creditCards,message) {
+  if (!save({...state,creditCards})) return false;
+  renderCards();
+  say(message);
+  return true;
+}
+movementFields.kind.innerHTML = [...cardKinds].map(([kind,label]) => '<option value="'+kind+'">'+label+'</option>').join('');
+cardFields.card.addEventListener('change',fillCardForm);
+movementFields.card.addEventListener('change',renderCardHistory);
+cardForm.addEventListener('submit',event => {
+  event.preventDefault();
+  const creditCards = [...state.creditCards];
+  const index = selectedCard(cardFields.card);
+  const card = {
+    label:cardFields.label.value.trim(), bank:cardFields.bank.value.trim(), lastFour:cardFields.lastFour.value.trim(),
+    opening:units(cardFields.opening.value), limit:units(cardFields.limit.value),
+    apr:optionalAmount(cardFields.apr), minimum:optionalAmount(cardFields.minimum), due:cardFields.due.value,
+    movements:creditCards[index]?.movements ?? []
+  };
+  const target = index === -1 ? creditCards.length : index;
+  creditCards[target] = card;
+  if (saveCards(creditCards,'Tarjeta guardada.')) {
+    cardFields.card.value = String(target);
+    movementFields.card.value = String(target);
+    fillCardForm();
+    renderCardHistory();
+  }
+});
+el('remove-card').addEventListener('click',() => {
+  const index = selectedCard(cardFields.card);
+  if (!ready || !state.creditCards[index] || !confirm('¿Eliminar esta tarjeta y todo su historial?')) return;
+  if (saveCards(state.creditCards.filter((_,i) => i !== index),'Tarjeta eliminada.')) {
+    cardFields.card.value = '';
+    movementFields.card.selectedIndex = state.creditCards.length ? 0 : -1;
+    fillCardForm();
+    renderCardHistory();
+  }
+});
+movementForm.addEventListener('submit',event => {
+  event.preventDefault();
+  const index = selectedCard(movementFields.card);
+  const card = state.creditCards[index];
+  if (!card) return;
+  const movement = {kind:movementFields.kind.value,day:movementFields.day.value,
+    amount:units(movementFields.amount.value),note:movementFields.note.value.trim()};
+  const creditCards = state.creditCards.map((item,i) => i === index
+    ? {...card,movements:[...card.movements,movement]} : item);
+  if (saveCards(creditCards,'Movimiento de tarjeta registrado.')) {
+    movementFields.amount.value = '';
+    movementFields.note.value = '';
+  }
+});
+el('card-history').addEventListener('click',event => {
+  const button = event.target.closest('button[data-remove-movement]');
+  if (!button || !ready) return;
+  const index = selectedCard(movementFields.card);
+  const card = state.creditCards[index];
+  const movement = Number(button.dataset.removeMovement);
+  if (!card?.movements[movement] || !confirm('¿Eliminar este movimiento y recalcular el saldo?')) return;
+  const creditCards = state.creditCards.map((item,i) => i === index
+    ? {...card,movements:card.movements.filter((_,j) => j !== movement)} : item);
+  saveCards(creditCards,'Movimiento de tarjeta eliminado.');
+});
+
 el('day').value = localDay();
 el('report-start').value = localDay().slice(0,4)+'-01-01';
 el('report-end').value = localDay();
@@ -1152,14 +1361,17 @@ el('export').addEventListener('click',() => {
   downloadFile(JSON.stringify(state,null,2),'application/json','Mara-Money-respaldo-'+el('day').value+'.json');
 });
 el('backup').addEventListener('change',async event => {
+  const epoch = cloudEpoch;
   const file = event.target.files[0];
   event.target.value = '';
   if (!file) return;
   try {
     if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
     const restored = validate(JSON.parse(await file.text()));
-    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos y '+restored.expenses.length+' gastos. ¿Reemplazar los registros y la configuración de esta copia?')) return;
+    if (epoch !== cloudEpoch) return;
+    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
     if (save(restored,true)) {
+      resetCardForms();
       renderSettings();
       renderOpening();
       render();
@@ -1241,6 +1453,9 @@ el('cloud-signup').addEventListener('click',async () => {
   const {data,error} = await cloudClient.auth.signUp({email:el('cloud-email').value.trim(),password:el('cloud-password').value,options:{emailRedirectTo:location.origin+location.pathname}});
   el('cloud-password').value = '';
   cloudMessage(error ? 'No se pudo crear la cuenta: '+error.message : data.session ? 'Cuenta creada. Cargando tus datos…' : 'Revisa tu correo y confirma la cuenta. Después inicia sesión.',!!error);
+});
+document.querySelector('a[href="#backup-section"]').addEventListener('click',() => {
+  el('backup-section').open = true;
 });
 el('cloud-signout').addEventListener('click',async () => {
   if (cloudPending || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
