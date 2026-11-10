@@ -1,0 +1,1280 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mara Money Buckets</title>
+<style>
+@font-face {
+  font-family: "Mara Shooting Star";
+  src: local("Shooting Star - personal use Regular"), local("Shooting Star - personal use"),
+       local("ShootingStar-personaluse");
+  font-style: normal;
+  font-weight: 400;
+}
+:root {
+  color-scheme: light;
+  --ink: #321741;
+  --muted: #665171;
+  --purple: #86105f;
+  --line: #edd7ef;
+  --surface: #fffaff;
+  --pale: #f9eafa;
+  --display: Georgia, "Times New Roman", serif;
+  --sticker-font: "Mara Uploaded Font", "Mara Shooting Star", "Shooting Star - personal use", var(--display);
+  --body-font: "Segoe UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(circle, #eccce9 1px, transparent 1.4px) 0 0 / 18px 18px, #fff4fb;
+  color: var(--ink);
+  font: 16px/1.5 var(--body-font);
+}
+header {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #f3dff6;
+  color: #391847;
+}
+header::before, header::after {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  content: "";
+}
+header::before {
+  inset: -22%;
+  transform: rotate(-9deg);
+  background:
+    radial-gradient(ellipse at 24% 58%, #fff0f8 4%, #f8dff3 23%, #e7b7df75 37%, transparent 51%),
+    radial-gradient(ellipse at 81% 69%, #ffe4f4 1%, #f6bce1c2 18%, #e7a0d886 31%, transparent 47%),
+    radial-gradient(ellipse at 78% 24%, #f9ebff 0%, #e1c4f8 12%, #c694e2a6 29%, transparent 46%),
+    radial-gradient(ellipse at 46% 90%, #ffd8ee 0%, #e4a8d8 18%, transparent 43%),
+    conic-gradient(from 125deg at 69% 47%, #d9b8ed, #ffd9ec, #d3a9e8, #f4c8ed, #d9b8ed);
+  filter: blur(10px);
+}
+header::after {
+  opacity: .19;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.58' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
+}
+.hero, main, .quick-links { max-width: 1380px; margin: auto; }
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(215px, 44%);
+  align-items: center;
+  gap: 22px;
+  padding: 48px 26px 42px;
+}
+.hero-tag {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 0 0 12px;
+  color: #65305c;
+  font-size: .73rem;
+  font-weight: 700;
+  letter-spacing: .19em;
+  text-transform: uppercase;
+}
+.hero-tag::before {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  background: currentColor;
+  transform: rotate(45deg);
+  content: "";
+}
+h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
+.brand {
+  display: flex;
+  justify-content: flex-start;
+  text-align: left;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 .20em;
+  margin: 0;
+  padding: .04em 0 .10em;
+  color: #ffd2eb;
+  font: 400 clamp(2.45rem, 6.8vw, 6.3rem)/1.15 var(--sticker-font);
+  letter-spacing: -.035em;
+  paint-order: stroke fill;
+  -webkit-text-stroke: clamp(2px, .042em, 4px) #50226b;
+  filter: drop-shadow(0 .045em 0 #aa549f) drop-shadow(.018em .038em 0 #582760)
+    drop-shadow(.025em .05em .055em #391d4e60);
+}
+.brand span {
+  color: var(--brand-light);
+  filter: drop-shadow(1px 0 0 #fff) drop-shadow(-1px 0 0 #fff)
+    drop-shadow(0 1px 0 #fff) drop-shadow(0 -1px 0 #fff);
+}
+.brand span:nth-child(1) { --brand-light: #ffc1e3; --brand-deep: #e981b9; }
+.brand span:nth-child(2) { --brand-light: #ead8ff; --brand-deep: #b98ded; }
+.brand span:nth-child(3) { --brand-light: #eff7af; --brand-deep: #bed36e; position: relative; padding-right: .34em; }
+@supports (background-clip: text) {
+  .brand span {
+    background: linear-gradient(180deg, var(--brand-light) 22%, var(--brand-deep) 90%);
+    background-clip: text;
+    color: transparent;
+  }
+}
+.brand span:last-child::after {
+  position: absolute;
+  top: .02em;
+  right: 0;
+  width: .34em;
+  height: .35em;
+  background: #effb9b;
+  clip-path: polygon(50% 0, 61% 38%, 100% 50%, 61% 62%, 50% 100%, 39% 62%, 0 50%, 39% 38%);
+  content: "";
+}
+.hero-description { max-width: 500px; margin: 17px 0 0; color: #44234f; }
+.hero-art { justify-self: end; display: block; width: min(100%, 570px); height: auto; }
+.nav-bar { border-bottom: 1px solid var(--line); background: #fff8fa; }
+.quick-links { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 24px; }
+.quick-links a {
+  padding: 7px 12px;
+  border-radius: 100px;
+  color: var(--purple);
+  font-size: .9rem;
+  font-weight: 650;
+  text-decoration: none;
+}
+.quick-links a:hover { background: var(--pale); }
+main {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 32px 18px;
+  padding: 34px 20px 48px;
+}
+#status { grid-column: 1 / -1; z-index: 1; }
+@media (max-width: 760px) {
+  main { grid-template-columns: minmax(0, 1fr); }
+}
+section, details {
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  background: var(--surface);
+}
+main > section, main > details { box-shadow: 0 4px 18px #4e25470a; scroll-margin-top: 14px; }
+#income { border-top: 4px solid #e04ba6; }
+h2 { margin: 0 0 8px; font-size: clamp(1.55rem, 4vw, 2.05rem); line-height: 1.12; }
+h3 { margin: 18px 0 5px; font: 400 1rem/1.4 var(--display); }
+summary { cursor: pointer; font-weight: 750; color: var(--purple); }
+summary h2 { display: inline; }
+p { margin: 6px 0 14px; }
+.muted { color: var(--muted); }
+form, .actions { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
+label { display: grid; gap: 5px; font-size: .92rem; font-weight: 650; }
+input, select, button {
+  max-width: 100%;
+  min-height: 43px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  font: inherit;
+}
+input, select { min-width: 0; border: 1px solid #b99fb5; background: #fffcfe; color: var(--ink); }
+#amount, #expense-amount { width: 140px; }
+button { border: 1px solid var(--purple); background: var(--purple); color: white; font-weight: 650; cursor: pointer; }
+button:hover:enabled { background: #6b084b; }
+button.secondary { border-color: #dcc3d5; background: var(--pale); color: var(--purple); }
+button.secondary:hover:enabled { background: #f0dce8; }
+button:disabled { opacity: .52; cursor: default; }
+:where(a,button,input,select,summary):focus-visible { outline: 3px solid #9b36a4; outline-offset: 2px; }
+.table { overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: middle; text-align: left; }
+th { background: var(--pale); color: var(--purple); font-size: .84rem; }
+td button, .money { white-space: nowrap; }
+.note { padding: 9px 12px; border-radius: 9px; background: var(--pale); }
+.error { color: #8f2338; }
+.entries { display: grid; gap: 8px; }
+.entries details { padding: 11px 13px; }
+.entries summary { margin-bottom: 4px; }
+.entries p { margin: 6px 0; }
+.spaced { margin-top: 14px; }
+#status:empty { display: none; }
+#status { position: sticky; bottom: 8px; margin: 0; border: 1px solid var(--line); background: #fffaff; box-shadow: 0 3px 12px #451e3d24; }
+#settings table input[type=text] { width: 100%; min-width: 130px; }
+@media (max-width: 620px) {
+  .hero { grid-template-columns: minmax(0, 1fr); padding: 29px 18px 26px; gap: 10px; }
+  .hero-art { width: min(100%, 400px); justify-self: center; }
+  .quick-links { padding-inline: 10px; }
+  main { padding: 26px 10px 34px; }
+  section, details { padding: 14px; }
+  th, td { padding: 7px 8px; }
+}
+
+/* Candy colors and sticker details */
+.hero { position: relative; }
+.hero-art { filter: drop-shadow(0 8px 12px #250d3c55); }
+.quick-links a:nth-child(3n+1) { background: #fce0f1; }
+.quick-links a:nth-child(3n+2) { background: #ede1ff; color: #59267d; }
+.quick-links a:nth-child(3n) { background: #eef5bd; color: #485020; }
+.quick-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
+main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e25470a; }
+#income { border-top: 4px solid #e04ba6; }
+#moves { border-top: 4px solid #9e67de; }
+#spending { border-top: 4px solid #afc94d; }
+
+#financial-analysis { grid-column: 1 / -1; }
+.analysis-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.analysis-metrics > div { padding: 10px 13px; border-radius: 11px; background: var(--pale); }
+.analysis-metrics dt { color: var(--muted); font-size: .9rem; }
+.analysis-metrics dd { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.category-chart { display: grid; gap: 11px; list-style: none; margin: 0 0 19px; padding: 0; }
+.category-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; }
+.category-caption span { color: var(--muted); font-variant-numeric: tabular-nums; }
+.category-track { height: 9px; margin-top: 5px; overflow: hidden; border-radius: 99px; background: var(--pale); }
+.category-fill { height: 100%; border-radius: inherit; background: #cc3e9d; }
+.category-chart li:nth-child(3n+2) .category-fill { background: #9356ce; }
+.category-chart li:nth-child(3n) .category-fill { background: #7c9829; }
+
+main > section > h2, main > details > summary > h2 {
+  margin: 0 0 12px;
+  max-width: 100%;
+  padding: .16em .45em .22em;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  background: var(--title-plate, #fff0f8);
+  color: #391847;
+  box-shadow: 0 0 0 1px var(--title-shadow, #edb9df), 2px 4px 0 var(--title-shadow, #edb9df),
+    3px 7px 10px #5c235a28;
+  font: 400 clamp(1.35rem, 3.1vw, 1.75rem)/1.2 var(--sticker-font);
+  text-transform: capitalize;
+  letter-spacing: .01em;
+  paint-order: stroke fill;
+  -webkit-text-stroke: clamp(4px, .19em, 6px) #fff;
+}
+main > section > h2 { display: table; margin-top: -34px; margin-inline: auto; text-align: center; }
+main > details > summary { margin-top: -34px; text-align: center; }
+main > details > summary > h2 { vertical-align: middle; }
+#spending, #financial-analysis { --title-shadow: #c5d982; --title-plate: #f5fadf; }
+#moves, #history-section, #settings { --title-shadow: #c9abea; --title-plate: #f6edff; }
+@media (max-width: 620px) {
+  main > section > h2, main > details > summary { margin-top: -25px; }
+}
+
+.state-chip, .balance-chip {
+  display: inline-block;
+  padding: .28em .65em;
+  border-radius: .66em;
+  box-shadow: 0 2px 0 var(--chip-shadow), 0 3px 7px #35193c20;
+  background: var(--chip-bg);
+  color: var(--chip-ink);
+  font-size: .9em;
+  font-weight: 750;
+  white-space: nowrap;
+}
+.chip-pending { --chip-bg: #ffebad; --chip-ink: #542f09; --chip-shadow: #d6a444; }
+.chip-done { --chip-bg: #dcf3bb; --chip-ink: #284607; --chip-shadow: #91b751; }
+.chip-neutral, .chip-forecast { --chip-bg: #eee3ff; --chip-ink: #4a2268; --chip-shadow: #b68cdb; }
+.chip-posted { --chip-bg: #ffdcec; --chip-ink: #6a1648; --chip-shadow: #d78ab3; }
+.chip-negative { --chip-bg: #ffd8de; --chip-ink: #791b31; --chip-shadow: #d98597; }
+.transfer-action { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+
+/* Cloud sign-in */
+#cloud-access { grid-column: 1 / -1; border-top: 4px solid #9e67de; }
+#cloud-access form { margin-top: 12px; }
+#cloud-access input { width: min(100%, 340px); }
+#cloud-access .cloud-message { font-weight: 650; }
+body.cloud-locked main > :not(#cloud-access):not(#status) { display:none !important; }
+body.cloud-locked .quick-links { display:none; }
+</style>
+</head>
+<body>
+<header>
+<div class="hero">
+  <div>
+    <p class="hero-tag">Tu registro financiero</p>
+    <h1 class="brand"><span>Mara</span> <span>Money</span> <span>Buckets</span></h1>
+    <p class="hero-description">Registra lo que cobras, reparte el dinero entre tus cuentas y lleva tus gastos al día.</p>
+  </div>
+  <svg class="hero-art" viewBox="0 0 340 220" aria-hidden="true" focusable="false">
+    <ellipse cx="184" cy="109" rx="132" ry="91" fill="none" stroke="#e1a9c4" stroke-opacity=".34"/>
+    <circle cx="187" cy="109" r="81" fill="#f8cadc" fill-opacity=".09"/>
+    <path d="M266 177c-8-11-22-1 0 15 22-16 8-26 0-15Z" fill="#ff96d6" stroke="#fff0fa" stroke-width="1.4"/>
+    <path d="m126 25 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#effb9b"/>
+    <circle cx="299" cy="83" r="4" fill="#effb9b"/>
+    <circle cx="63" cy="139" r="3.5" fill="#e2b5ff"/>
+    <path d="M56 88v22m-11-11h22M280 31v32m-16-16h32M309 143v21m-10-10h20M94 173v24m-12-12h24" stroke="#ffc0e6" stroke-width="2" stroke-linecap="round"/>
+    <g transform="rotate(-12 151 100)">
+      <rect x="83" y="55" width="144" height="93" rx="15" fill="#ff79c7"/>
+      <rect x="100" y="72" width="25" height="17" rx="4" fill="#722382"/>
+      <path d="M101 119h53m-53 9h30" stroke="#722382" stroke-width="3" stroke-linecap="round"/>
+    </g>
+    <g transform="rotate(13 206 129)">
+      <rect x="139" y="85" width="139" height="92" rx="15" fill="#f1d7ff"/>
+      <path d="M140 113h137" stroke="#9b58cc" stroke-width="13"/>
+      <path d="M154 149h40m-40 9h25" stroke="#672085" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="252" cy="151" r="10" fill="#ff79c7"/>
+      <circle cx="240" cy="151" r="10" fill="#b45cf0" fill-opacity=".75"/>
+    </g>
+    <circle cx="119" cy="160" r="23" fill="#effb9b"/>
+    <circle cx="119" cy="160" r="17" fill="none" stroke="#897e34"/>
+    <path d="M124 153h-7a3.5 3.5 0 0 0 0 7h4a3.5 3.5 0 0 1 0 7h-8m6-17v20" fill="none" stroke="#5c501d" stroke-width="1.8" stroke-linecap="round"/>
+    <g transform="translate(306 179) rotate(8)" stroke="#82713b" stroke-width="1.4">
+      <path d="M-18 0v18c0 4 8 7 18 7s18-3 18-7V0Z" fill="#e2bd66"/>
+      <path d="M-18 8c0 4 8 7 18 7s18-3 18-7M-18 14c0 4 8 7 18 7s18-3 18-7" fill="none"/>
+      <ellipse rx="18" ry="7" fill="#f5ef9c"/>
+      <ellipse rx="12" ry="4" fill="none" stroke="#a38843"/>
+    </g>
+  </svg>
+</div>
+</header>
+<div class="nav-bar">
+<nav class="quick-links" aria-label="Accesos rápidos">
+  <a href="#income">Ingresos</a>
+  <a href="#spending">Gastos</a>
+  <a href="#moves">Transferencias</a>
+  <a href="#account-balances">Saldos</a>
+  <a href="#history-section">Historial</a>
+  <a href="#projection-title">Análisis</a>
+  <a href="#report-title">Reportes</a>
+</nav>
+</div>
+<main>
+<section id="cloud-access" aria-labelledby="cloud-title">
+<h2 id="cloud-title">Mi cuenta · Mara Money</h2>
+<p id="cloud-state" class="cloud-message" role="status" aria-live="polite">Conectando con Supabase…</p>
+<div id="cloud-login">
+  <p class="muted">Inicia sesión para recuperar tus datos desde la nube. Si todavía no tienes una cuenta, créala con tu correo electrónico.</p>
+  <form id="cloud-form">
+    <label>Correo electrónico <input id="cloud-email" type="email" autocomplete="email" required></label>
+    <label>Contraseña <input id="cloud-password" type="password" autocomplete="current-password" minlength="6" required></label>
+    <button type="submit" id="cloud-signin">Iniciar sesión</button>
+    <button type="button" class="secondary" id="cloud-signup">Crear cuenta</button>
+  </form>
+  <p class="muted">Si confirmas tu correo por email, regresa a esta página para iniciar sesión.</p>
+</div>
+<div id="cloud-logged" hidden>
+  <p id="cloud-user" class="muted"></p>
+  <div class="actions">
+    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
+    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
+  </div>
+  <p class="muted">Al iniciar por primera vez, usa «Respaldo y recuperación» para importar el JSON que descargaste. Nunca se importa automáticamente el historial anterior.</p>
+</div>
+</section>
+<section id="income" aria-labelledby="entry-title">
+<h2 id="entry-title">Registrar ingreso</h2>
+<p id="plan" class="note"></p>
+<form id="entry">
+<label>Fecha <input id="day" type="date" required></label>
+<label>Ingreso ($) <input id="amount" inputmode="decimal" type="text" placeholder="250.00" required></label>
+<label>Cuenta que recibió el ingreso <select id="source"></select></label>
+<button id="save-entry">Registrar y repartir</button>
+</form>
+<div id="preview" class="spaced" aria-live="polite"></div>
+</section>
+<section id="spending" aria-labelledby="expense-title">
+<h2 id="expense-title">Registrar gasto</h2>
+<form id="expense">
+<label>Fecha <input id="expense-day" type="date" required></label>
+<label>Importe ($) <input id="expense-amount" type="text" inputmode="decimal" placeholder="23.00" required></label>
+<label>Cuenta de donde salió <select id="expense-account" required></select></label>
+<label>Concepto <input id="expense-note" type="text" maxlength="120" placeholder="Almuerzo" required></label>
+<label>Categoría del gasto <select id="expense-category"></select></label>
+<button id="save-expense">Registrar gasto</button>
+</form>
+</section>
+<section id="moves" aria-labelledby="transfers-title">
+<h2 id="transfers-title" tabindex="-1">Registrar transferencias</h2>
+<p class="muted">Después de mover el dinero en tu banco, pulsa <strong>Marcar completada</strong>. Puedes revisar o corregir el estado en el historial.</p>
+<h3>Transferencia manual</h3>
+<p class="muted">Registra aquí dinero que ya moviste entre tus cuentas. Si el movimiento ya aparece como sugerido, márcalo como completado en la lista de abajo.</p>
+<form id="manual-transfer">
+<label>Fecha <input id="manual-day" type="date" required></label>
+<label>Desde <select id="manual-source" required></select></label>
+<label>Hacia <select id="manual-destination" required></select></label>
+<label>Importe ($) <input id="manual-amount" type="text" inputmode="decimal" placeholder="100.00" required></label>
+<label>Concepto (opcional) <input id="manual-note" type="text" maxlength="120"></label>
+<button id="save-manual-transfer" type="submit">Registrar transferencia</button>
+</form>
+<h3>Transferencias sugeridas</h3>
+<div id="transfers"></div>
+<h3>Transferencias manuales registradas</h3>
+<div id="manual-history"></div>
+</section>
+<section id="account-balances" aria-labelledby="balances-title">
+<h2 id="balances-title">Saldos por bucket</h2>
+<p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
+<div id="balances"></div>
+<details class="spaced">
+<summary>Saldos iniciales</summary>
+<p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
+<form id="opening-form" style="display:block"></form>
+</details>
+</section>
+<section id="history-section" aria-labelledby="history-title">
+<h2 id="history-title">Historial de ingresos y transferencias</h2>
+<p class="muted">Abre un día para revisar el reparto. Actualiza el estado aquí después de mover el dinero en tu banco.</p>
+<div class="entries" id="history"></div>
+</section>
+<section aria-labelledby="daily-title">
+<h2 id="daily-title">Resumen diario y gastos</h2>
+<p class="muted">El neto es el ingreso menos los gastos del día. Las transferencias quedan en su propio historial.</p>
+<div id="daily"></div>
+<h3>Detalle de gastos</h3>
+<div id="expenses"></div>
+</section>
+<section id="financial-analysis" aria-labelledby="projection-title">
+<h2 id="projection-title">Análisis financiero y proyección</h2>
+<p class="muted">Se actualiza con tus ingresos, gastos y transferencias registrados. Úsalo para ver qué está consumiendo el saldo de cada cuenta y cómo podría cerrar el año si mantienes el mismo ritmo.</p>
+<div id="projection-result"></div>
+</section>
+<section aria-labelledby="report-title">
+<h2 id="report-title">Reporte para tu contable</h2>
+<p class="muted">Descarga un CSV para abrir en Excel. Las transferencias completadas aparecen una vez, con su origen y destino.</p>
+<form id="report-form">
+<label>Desde <input id="report-start" type="date" required></label>
+<label>Hasta <input id="report-end" type="date" required></label>
+<label>Cuenta <select id="report-account"></select></label>
+<label>Movimientos
+<select id="report-type">
+<option value="">Todos</option>
+<option value="Gasto">Solo gastos</option>
+<option value="Ingreso">Solo ingresos</option>
+<option value="Transferencia">Solo transferencias</option>
+</select>
+</label>
+<button id="download-report" type="submit">Descargar CSV</button>
+</form>
+<p class="muted spaced">El reporte usa el día en que marcaste la transferencia como completada. Las transferencias antiguas sin esa fecha usan la del ingreso asociado y aparecen identificadas.</p>
+</section>
+<details id="settings">
+<summary><h2>Configurar categorías y reparto</h2></summary>
+<p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Escribe directamente los porcentajes que quieras usar. Deben sumar 100%. El cambio se aplica a los ingresos nuevos.</p>
+<div id="configuration"></div>
+<h3>Letra del título y los encabezados</h3>
+<p class="muted">Selecciona Shooting Star.ttf en este dispositivo. La letra se guarda solo en este navegador.</p>
+<label>Archivo de fuente <input id="sticker-font-file" type="file" accept=".ttf,.otf,font/ttf,font/otf"></label>
+<p id="sticker-font-status" class="muted" aria-live="polite"></p>
+</details>
+<details>
+<summary><h2>Respaldo y recuperación</h2></summary>
+<p class="muted">Tus datos se sincronizan con tu cuenta de Supabase cuando aparece «Guardado en la nube». Exporta un respaldo adicional. Importar reemplaza los datos de esta cuenta; espera la confirmación de sincronización.</p>
+<div class="actions"><button id="export" type="button">Exportar respaldo JSON</button><label>Archivo de respaldo <input id="backup" type="file" accept=".json,application/json"></label></div>
+</details>
+<p id="status" class="note" role="status" aria-live="polite"></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script>
+'use strict';
+const accounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
+const expenseCategories = [
+  'Comida y supermercado','Transporte','Vivienda y servicios','Salud',
+  'Compras personales','Suscripciones y entretenimiento','Negocio y materiales',
+  'Viajes','Deudas y quiebra','Contribuciones','Otros'
+];
+const validExpenseCategory = value => value === '' || expenseCategories.includes(value);
+const travelPlanRates = [1400,3730,0,4445,425,0];
+const legacyBucketCount = 8; // Preserve compatibility with previous backups.
+const key = 'mara-money-v1';
+const maxIncome = 100000000;
+const maxEntries = 100000;
+const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[]});
+const sum = values => values.reduce((total,value) => total + value,0);
+const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
+const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
+const validRates = rates => vector(rates,accounts.length,x => boundedInt(x,0,10000)) && sum(rates) === 10000;
+const validDay = value => {
+  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + 'T00:00:00Z');
+  return Number.isFinite(+date) && date.toISOString().slice(0,10) === value;
+};
+function units(value) {
+  const match = /^(\d{1,7})(?:[.,](\d{1,2}))?$/.exec(value.trim());
+  return match ? Number(match[1])*100 + Number((match[2] || '').padEnd(2,'0')) : NaN;
+}
+function allocate(amount,rates) {
+  const exact = rates.map(rate => amount * rate);
+  const parts = exact.map(value => Math.floor(value / 10000));
+  const byRemainder = parts.map((_,index) => index).sort((a,b) => exact[b]%10000 - exact[a]%10000 || a-b);
+  const remaining = amount - sum(parts);
+  for (const index of byRemainder.slice(0,remaining)) parts[index]++;
+  return parts;
+}
+function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTransfers=[]) {
+  const posted = [...opening];
+  const expected = [...opening];
+  for (const entry of entries) {
+    posted[entry.source] += entry.amount;
+    entry.parts.forEach((part,index) => {
+      expected[index] += part;
+      if (index !== entry.source && entry.done[index]) {
+        posted[entry.source] -= part;
+        posted[index] += part;
+      }
+    });
+  }
+  for (const expense of expenses) {
+    posted[expense.account] -= expense.amount;
+    expected[expense.account] -= expense.amount;
+  }
+  for (const move of manualTransfers) {
+    posted[move.source] -= move.amount;
+    posted[move.destination] += move.amount;
+    expected[move.source] -= move.amount;
+    expected[move.destination] += move.amount;
+  }
+  return {posted,expected};
+}
+function validate(data) {
+  if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates)
+      || !vector(data.purposes,accounts.length,x => typeof x === 'string' && x.length <= 120)
+      || !vector(data.buckets,legacyBucketCount,x => boundedInt(x,-1,accounts.length-1))
+      || !Array.isArray(data.entries) || data.entries.length > maxEntries) throw Error('El formato del respaldo no es válido.');
+  const days = new Set();
+  const entries = data.entries.map(entry => {
+    if (!entry || !validDay(entry.day) || days.has(entry.day) || !boundedInt(entry.amount,1,maxIncome)
+        || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates)
+        || !vector(entry.parts,accounts.length,x => boundedInt(x,0,entry.amount))
+        || !allocate(entry.amount,entry.rates).every((part,index) => part === entry.parts[index])
+        || !vector(entry.done,accounts.length,(x,index) => typeof x === 'boolean' && (!x || (index !== entry.source && entry.parts[index] > 0)))) throw Error('El respaldo contiene un ingreso o una transferencia inválida.');
+    days.add(entry.day);
+    const result = {day:entry.day,amount:entry.amount,source:entry.source,rates:entry.rates,parts:entry.parts,done:entry.done};
+    if (Object.hasOwn(entry,'completedOn')) {
+      if (!vector(entry.completedOn,accounts.length,(date,index) => date === null || (entry.done[index] && validDay(date)))) {
+        throw Error('El respaldo contiene una fecha de transferencia inválida.');
+      }
+      result.completedOn = entry.completedOn;
+    }
+    return result;
+  });
+  const opening = Object.hasOwn(data,'opening') ? data.opening : accounts.map(() => 0);
+  const expenses = Object.hasOwn(data,'expenses') ? data.expenses : [];
+  if (!vector(opening,accounts.length,x => boundedInt(x,-maxIncome,maxIncome))
+      || !Array.isArray(expenses) || expenses.length > maxEntries) throw Error('El respaldo contiene saldos o gastos inválidos.');
+  const checkedExpenses = expenses.map(expense => {
+    if (!expense || !validDay(expense.day) || !boundedInt(expense.account,0,accounts.length-1)
+        || !boundedInt(expense.amount,1,maxIncome) || typeof expense.note !== 'string'
+        || !expense.note.trim() || expense.note.length > 120) throw Error('El respaldo contiene un gasto inválido.');
+    const result = {day:expense.day,account:expense.account,amount:expense.amount,note:expense.note};
+    if (Object.hasOwn(expense,'category')) {
+      if (!validExpenseCategory(expense.category)) throw Error('El respaldo contiene una categoría de gasto inválida.');
+      result.category = expense.category;
+    }
+    return result;
+  });
+  const manualTransfers = Object.hasOwn(data,'manualTransfers') ? data.manualTransfers : [];
+  if (!Array.isArray(manualTransfers) || manualTransfers.length > maxEntries) throw Error('El respaldo contiene transferencias manuales inválidas.');
+  const checkedTransfers = manualTransfers.map(move => {
+    if (!move || !validDay(move.day) || !boundedInt(move.source,0,accounts.length-1)
+        || !boundedInt(move.destination,0,accounts.length-1) || move.source === move.destination
+        || !boundedInt(move.amount,1,maxIncome) || typeof move.note !== 'string' || move.note.length > 120) {
+      throw Error('El respaldo contiene una transferencia manual inválida.');
+    }
+    return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
+  });
+  return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers};
+}
+
+const el = id => document.getElementById(id);
+const currency = new Intl.NumberFormat('es-PR',{style:'currency',currency:'USD'});
+const money = cents => currency.format(cents/100);
+const pct = rate => (rate/100).toFixed(2).replace(/\.00$/,'') + ' %';
+const safe = value => String(value).replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const bucketLabel = index => {
+  const category = state.purposes[index];
+  const name = accounts[index];
+  return category ? '<strong>'+safe(category)+'</strong><br><small class="muted">'+name+'</small>' : name;
+};
+const options = () => accounts.map((name,i) => '<option value="'+i+'">'+name+'</option>').join('');
+const expenseOptions = (selected='') => ['',...expenseCategories].map(category =>
+  '<option value="'+safe(category)+'"'+(category === selected ? ' selected' : '')+'>'+(category || 'Sin categoría')+'</option>').join('');
+const table = (columns,rows) => '<div class="table"><table><thead><tr>'+columns.map(x => '<th scope="col">'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
+const row = cells => '<tr>'+cells.map(x => '<td>'+x+'</td>').join('')+'</tr>';
+const cash = value => '<span class="money">'+money(value)+'</span>';
+const say = (message,error=false) => {
+  el('status').textContent = message;
+  el('status').classList.toggle('error',error);
+};
+let state = initial();
+let stored = null;
+let ready = false;
+let unreadable = false;
+let cloudClient = null;
+let cloudUser = null;
+let cloudPending = null;
+let cloudWriting = false;
+let cloudFailed = false;
+let cloudEpoch = 0;
+const cloudUrl = 'https://qkasvabnygwlfqagafqd.supabase.co';
+const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
+// Original browser data is read but never automatically uploaded or overwritten.
+try { stored = localStorage.getItem(key); } catch { /* Safari may restrict localStorage */ }
+function cloudMessage(message,error=false) {
+  el('cloud-state').textContent = message;
+  el('cloud-state').classList.toggle('error',error);
+}
+function cloudLock() {
+  ready = false;
+  document.body.classList.add('cloud-locked');
+  el('cloud-login').hidden = false;
+  el('cloud-logged').hidden = true;
+  el('cloud-retry').hidden = true;
+}
+function cloudUnlock() {
+  document.body.classList.remove('cloud-locked');
+  el('cloud-login').hidden = true;
+  el('cloud-logged').hidden = false;
+  el('cloud-user').textContent = 'Sesión: ' + cloudUser.email;
+  ready = true;
+  renderSettings(); renderOpening(); render();
+}
+async function cloudLoad(user) {
+  const epoch = ++cloudEpoch;
+  cloudLock();
+  cloudUser = user;
+  cloudPending = null;
+  cloudFailed = false;
+  cloudMessage('Cargando tus datos desde Supabase…');
+  try {
+    const {data,error} = await cloudClient.from('mara_money_data').select('data').eq('user_id',user.id).maybeSingle();
+    if (error) throw error;
+    if (epoch !== cloudEpoch) return;
+    state = data ? validate(data.data) : initial();
+    cloudUnlock();
+    cloudMessage(data ? 'Datos recuperados de la nube ✓' : 'Cuenta lista. Todavía no hay datos en la nube; importa tu respaldo JSON para recuperar tu historial.');
+  } catch (error) {
+    if (epoch !== cloudEpoch) return;
+    cloudMessage('No se pudo cargar la nube: '+error.message+'. Revisa tu conexión y vuelve a iniciar sesión.',true);
+  }
+}
+async function cloudFlush() {
+  if (cloudWriting || !cloudPending || !cloudUser) return;
+  cloudWriting = true;
+  const epoch = cloudEpoch;
+  try {
+    while (cloudPending && epoch === cloudEpoch) {
+      const payload = cloudPending;
+      cloudPending = null;
+      const {error} = await cloudClient.from('mara_money_data').upsert({user_id:cloudUser.id,data:payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      if (error) throw error;
+    }
+    if (epoch === cloudEpoch) {
+      cloudFailed = false;
+      el('cloud-retry').hidden = true;
+      cloudMessage('Guardado en la nube ✓');
+    }
+  } catch (error) {
+    if (epoch === cloudEpoch) {
+      if (!cloudPending) cloudPending = state;
+      cloudFailed = true;
+      el('cloud-retry').hidden = false;
+      cloudMessage('Sin sincronizar: '+error.message+'. No cierres esta pestaña; toca «Reintentar sincronización».',true);
+    }
+  } finally {
+    cloudWriting = false;
+    if (cloudPending && !cloudFailed && epoch === cloudEpoch) void cloudFlush();
+  }
+}
+function save(next,recover=false) {
+  if (!ready || !cloudUser || cloudFailed) {
+    say('No se guardó el cambio. Inicia sesión o reintenta la sincronización pendiente.',true);
+    return false;
+  }
+  try {
+    const checked = validate(next);
+    state = checked;
+    cloudPending = checked;
+    cloudMessage('Sincronizando cambios…');
+    void cloudFlush();
+    return true;
+  } catch (error) {
+    say('No se guardó el cambio. '+error.message,true);
+    return false;
+  }
+}
+function renderPreview() {
+  const amount = units(el('amount').value);
+  if (!boundedInt(amount,1,maxIncome)) {
+    el('preview').textContent = '';
+    return;
+  }
+  const source = el('source').value === '' ? -1 : Number(el('source').value);
+  const parts = allocate(amount,state.rates);
+  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],accounts.map((_,index) => row([bucketLabel(index),pct(state.rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+}
+const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
+const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
+function transferButton(entry,index) {
+  const label = entry.done[index] ? 'Volver a pendiente' : 'Marcar completada';
+  return '<button type="button" class="secondary" data-day="'+entry.day+'" data-index="'+index+'" aria-label="'+label+' · '+accounts[index]+'">'+label+'</button>';
+}
+function renderTransfers() {
+  const rows = [...state.entries].sort((a,b) => a.day.localeCompare(b.day)).flatMap(entry =>
+    entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index]
+      ? [row([entry.day,bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,index)+'</div>'])]
+      : []));
+  el('transfers').innerHTML = rows.length ? table(['Ingreso del','Desde','Hacia','Importe','Acción'],rows)
+    : '<p class="muted">No hay transferencias pendientes. Cuando registres un ingreso, aquí aparecerán los importes que debas mover a otras cuentas.</p>';
+}
+function renderManualTransfers() {
+  const rows = [...state.manualTransfers].reverse().sort((a,b) => b.day.localeCompare(a.day)).map(move =>
+    row([move.day,bucketLabel(move.source),bucketLabel(move.destination),cash(move.amount),stateChip('Completada','done'),safe(move.note || '—')]));
+  el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto'],rows)
+    : '<p class="muted">Aún no hay transferencias manuales registradas.</p>';
+}
+function renderHistory(openDay) {
+  el('history').innerHTML = state.entries.length ? [...state.entries].sort((a,b) => b.day.localeCompare(a.day)).map(entry => {
+    const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index]).length;
+    const rows = accounts.map((name,index) => {
+      const part = entry.parts[index];
+      const move = index !== entry.source && part > 0;
+      const status = index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
+      const action = move ? transferButton(entry,index) : '';
+      return row([bucketLabel(index),pct(entry.rates[index]),cash(part),stateChip(status,move ? (entry.done[index] ? 'done' : 'pending') : 'neutral'),action]);
+    });
+    return '<details '+(entry.day === openDay ? 'open' : '')+'><summary>'+entry.day+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+accounts[entry.source]+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
+  }).join('') : '<p class="muted">Todavía no hay ingresos registrados.</p>';
+}
+function renderExpenses() {
+  const days = new Map();
+  for (const entry of state.entries) days.set(entry.day,{income:entry.amount,expense:0});
+  for (const expense of state.expenses) {
+    const totals = days.get(expense.day) ?? {income:0,expense:0};
+    totals.expense += expense.amount;
+    days.set(expense.day,totals);
+  }
+  const dailyRows = [...days].sort(([a],[b]) => b.localeCompare(a)).map(([day,totals]) =>
+    row([day,cash(totals.income),cash(totals.expense),cash(totals.income-totals.expense)]));
+  el('daily').innerHTML = dailyRows.length ? table(['Fecha','Ingresos','Gastos','Neto'],dailyRows) : '<p class="muted">Aún no hay ingresos ni gastos.</p>';
+  const expenseRows = state.expenses.map((expense,index) => ({expense,index})).reverse()
+    .sort((a,b) => b.expense.day.localeCompare(a.expense.day)).map(({expense,index}) =>
+      row([expense.day,safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
+        '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>']));
+  el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
+}
+function renderOpening() {
+  const rows = accounts.map((name,index) => row([name,
+    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+name+'" value="'+(state.opening[index]/100).toFixed(2)+'">']));
+  el('opening-form').innerHTML = table(['Cuenta','Saldo inicial ($)'],rows)
+    +'<button class="secondary spaced" id="save-opening" type="submit">Guardar saldos iniciales</button>';
+  el('save-opening').disabled = !ready;
+}
+const analysisWindow = 28;
+const dayMs = 86400000;
+function analyzeFinances(data,today) {
+  const recentStart = new Date(Date.parse(today)-(analysisWindow-1)*dayMs).toISOString().slice(0,10);
+  const yearEnd = today.slice(0,4)+'-12-31';
+  const daysLeft = (Date.parse(yearEnd)-Date.parse(today))/dayMs;
+  const movements = reportRows(data,'0000-01-01',today,-1,'');
+  const firstDay = movements[0]?.day;
+  const start = firstDay && firstDay > recentStart ? firstDay : recentStart;
+  const observedDays = firstDay ? (Date.parse(today)-Date.parse(start))/dayMs+1 : 0;
+  const categoryTotals = new Map();
+  const summaries = data.opening.map(balance => ({
+    balance,income:0,cost:0,incoming:0,outgoing:0,pendingIn:0,pendingOut:0,concepts:new Map()
+  }));
+  for (const move of movements) {
+    const source = summaries[move.source];
+    const destination = summaries[move.destination];
+    if (source) source.balance -= move.amount;
+    if (destination) destination.balance += move.amount;
+    if (move.day < start) continue;
+    if (move.kind === 'Ingreso') destination.income += move.amount;
+    if (move.kind === 'Gasto') {
+      source.cost += move.amount;
+      const category = move.expenseCategory || 'Sin categoría';
+      categoryTotals.set(category,(categoryTotals.get(category) ?? 0)+move.amount);
+      const label = move.note.trim();
+      const key = label.toLocaleLowerCase('es');
+      const concept = source.concepts.get(key) ?? {label,amount:0};
+      concept.amount += move.amount;
+      source.concepts.set(key,concept);
+    }
+    if (move.kind === 'Transferencia') {
+      source.outgoing += move.amount;
+      destination.incoming += move.amount;
+    }
+  }
+  for (const entry of data.entries) {
+    if (entry.day > today) continue;
+    entry.parts.forEach((part,index) => {
+      if (index === entry.source || entry.done[index] || !part) return;
+      summaries[index].pendingIn += part;
+      summaries[entry.source].pendingOut += part;
+    });
+  }
+  const accounts = summaries.map(item => {
+    const net = item.income-item.cost+item.incoming-item.outgoing;
+    const end = daysLeft === 0 ? item.balance
+      : observedDays >= 7 ? item.balance+Math.round(net*daysLeft/observedDays) : null;
+    return {...item,net,end};
+  });
+  return {start,yearEnd,observedDays,accounts,categoryTotals};
+}
+function categoryChart(totals,totalExpense) {
+  const heading = '<h3>Gastos por categoría</h3>';
+  if (!totalExpense) return heading+'<p class="muted">Cuando registres gastos en este período, aparecerán aquí.</p>';
+  const bars = [...totals].sort((a,b) => b[1]-a[1]).map(([name,amount]) => {
+    const share = (amount*100/totalExpense).toFixed(1);
+    return '<li><div class="category-caption"><strong>'+safe(name)+'</strong><span>'+money(amount)+' · '+share+' %</span></div>'
+      +'<div class="category-track" aria-hidden="true"><div class="category-fill" style="width:'+share+'%"></div></div></li>';
+  });
+  return heading+'<p class="muted">Porcentaje del total de gastos registrados en el período. Puedes clasificar gastos anteriores en Detalle de gastos.</p>'
+    +'<ul class="category-chart">'+bars.join('')+'</ul>';
+}
+function renderProjection() {
+  const today = localDay();
+  const analysis = analyzeFinances(state,today);
+  const total = key => sum(analysis.accounts.map(item => item[key]));
+  const projectedTotal = analysis.accounts[0].end === null ? '—' : cash(total('end'));
+  const metrics = [['Ingresos',total('income')],['Gastos',total('cost')],['Margen real',total('income')-total('cost')]];
+  const period = analysis.observedDays
+    ? 'Movimientos del '+analysis.start+' al '+today+' · '+analysis.observedDays+' días calendario.'
+    : 'Registra ingresos o gastos para ver tu ritmo. La tabla ya muestra los saldos iniciales.';
+  const rows = analysis.accounts.map((item,index) => row([
+    bucketLabel(index),cash(item.balance),cash(item.income),cash(item.cost),
+    cash(item.incoming-item.outgoing),cash(item.net),item.end === null ? '—' : cash(item.end)
+  ]));
+  const alerts = [];
+  const negative = analysis.accounts.filter(item => item.end !== null && item.end < 0);
+  if (negative.length) {
+    const list = analysis.accounts.map((item,index) => item.end !== null && item.end < 0
+      ? accounts[index]+' ('+money(item.end)+')' : '').filter(Boolean);
+    alerts.push('<li><strong>Saldo estimado bajo cero:</strong> '+list.join(', ')+'. Revisa los gastos de esas cuentas o si necesitan recibir más del reparto.</li>');
+  }
+  const declining = analysis.accounts.map((item,index) => ({...item,index}))
+    .filter(item => item.net < 0).sort((a,b) => a.net-b.net).slice(0,3);
+  if (declining.length) {
+    const list = declining.map(item => accounts[item.index]+' ('+money(item.net)+')');
+    alerts.push('<li><strong>Cuentas que consumieron saldo:</strong> '+list.join(', ')+'. Compara Gastos y Transferencias netas para identificar qué causó la caída.</li>');
+  }
+  const overspending = total('cost') > total('income');
+  if (overspending) {
+    alerts.push('<li><strong>Los gastos superaron los ingresos por '+money(total('cost')-total('income'))+'.</strong> Revisa primero los gastos más altos del período.</li>');
+  } else if (total('income') > 0) {
+    alerts.push('<li>Después de los gastos registrados quedaron <strong>'+money(total('income')-total('cost'))+'</strong> en el período. Verifica los pagos próximos antes de comprometer ese dinero.</li>');
+  }
+  const pending = total('pendingOut');
+  if (pending) {
+    alerts.push('<li>Hay <strong>'+money(pending)+'</strong> en transferencias pendientes. El análisis las incorpora cuando las marques completadas.</li>');
+  }
+  const concepts = analysis.accounts.flatMap((item,index) => [...item.concepts.values()].map(concept => ({...concept,index})))
+    .sort((a,b) => b.amount-a.amount).slice(0,5);
+  const spending = concepts.length ? '<h3>Gastos más altos del período</h3>'
+    +table(['Concepto','Cuenta','Total'],concepts.map(item => row([safe(item.label),bucketLabel(item.index),cash(item.amount)]))) : '';
+  const note = analysis.accounts[0].end === null
+    ? 'El estimado aparece cuando el historial abarca al menos 7 días.'
+    : 'El estimado al '+analysis.yearEnd+' prolonga el ritmo observado. Revisa gastos puntuales y pagos futuros al interpretar el saldo.';
+  el('projection-result').innerHTML = '<p class="muted">'+period+'</p><dl class="analysis-metrics">'
+    +metrics.map(([label,value]) => '<div><dt>'+label+'</dt><dd>'+money(value)+'</dd></div>').join('')+'</dl>'
+    +table(['Cuenta','Saldo actual','Ingresos','Gastos','Transferencias netas','Cambio del período','Estimado al 31 dic.'],
+      rows.concat(row(['<strong>Total</strong>',cash(total('balance')),cash(total('income')),cash(total('cost')),cash(0),cash(total('net')),projectedTotal])))
+    +'<p class="muted spaced">'+note+' Las transferencias completadas mueven saldo entre cuentas y se cancelan en el total.</p>'
+    +(alerts.length ? '<h3>Qué revisar</h3><ul>'+alerts.join('')+'</ul>' : '')+categoryChart(analysis.categoryTotals,total('cost'))+spending;
+}
+function reportRows(data,start,end,account,type) {
+  const rows = [];
+  function add(day,kind,source,destination,amount,note,dateBasis='Fecha registrada',expenseCategory='') {
+    if (day < start || day > end || (type && kind !== type)) return;
+    if (account !== -1 && source !== account && destination !== account) return;
+    rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory});
+  }
+  for (const entry of data.entries) {
+    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso diario');
+    entry.parts.forEach((part,index) => {
+      if (!entry.done[index]) return;
+      const completed = entry.completedOn?.[index];
+      add(completed || entry.day,'Transferencia',entry.source,index,part,'Entre cuentas propias',
+        completed ? 'Fecha en que se marcó completada' : 'Fecha del ingreso asociado');
+    });
+  }
+  for (const expense of data.expenses) {
+    add(expense.day,'Gasto',expense.account,null,expense.amount,expense.note,'Fecha registrada',expense.category);
+  }
+  for (const move of data.manualTransfers ?? []) {
+    add(move.day,'Transferencia',move.source,move.destination,move.amount,move.note || 'Entre cuentas propias');
+  }
+  return rows.sort((a,b) => a.day.localeCompare(b.day));
+}
+function reportCsv(rows) {
+  const csvCell = value => {
+    const text = String(value);
+    const escaped = /^\s*[=+@-]|^[\t\r\n]/.test(text) ? "'"+text : text;
+    return '"'+escaped.replace(/"/g,'""')+'"';
+  };
+  const name = index => index === null ? '' : accounts[index];
+  const category = index => index === null ? '' : state.purposes[index];
+  const header = ['Fecha','Tipo','Cuenta origen','Categoría origen','Cuenta destino','Categoría destino','Concepto','Importe USD','Referencia de fecha'];
+  const lines = rows.map(item => [item.day,item.kind,name(item.source),category(item.source),
+    name(item.destination),category(item.destination),item.note,(item.amount/100).toFixed(2),item.dateBasis]);
+  return '\uFEFF'+[header,...lines].map(cells => cells.map(csvCell).join(',')).join('\r\n')+'\r\n';
+}
+function render(openDay) {
+  el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
+  el('save-entry').disabled = !ready;
+  el('save-expense').disabled = !ready;
+  el('save-manual-transfer').disabled = !ready;
+  el('export').disabled = !ready;
+  el('download-report').disabled = !ready;
+  const {posted,expected} = balancesFor(state.entries,state.expenses,state.opening,state.manualTransfers);
+  el('balances').innerHTML = table(['Bucket','Saldo registrado','Saldo previsto'],accounts.map((_,index) => row([bucketLabel(index),balanceChip(posted[index],'posted'),balanceChip(expected[index],'forecast')])).concat(row(['<strong>Total</strong>',cash(sum(posted)),cash(sum(expected))])));
+  renderPreview();
+  renderTransfers();
+  renderManualTransfers();
+  renderHistory(openDay);
+  renderExpenses();
+  renderProjection();
+}
+function renderSettings() {
+  const accountRows = accounts.map((name,index) => row([name,
+    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje de '+name+'" value="'+(state.rates[index]/100)+'">',
+    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+name+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
+  el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Porcentaje (%)','Categoría del bucket'],accountRows)
+    +'<p id="rate-total" class="spaced" aria-live="polite"></p>'
+    +'<p class="note">Plan temporal para Premium Travel Club · meta de $1,529 antes del 27 de noviembre de 2026. Usa los porcentajes hasta completar la meta y ajusta el último importe a lo que falte.</p>'
+    +'<div class="actions spaced"><button id="load-travel-plan" type="button" class="secondary">Cargar plan temporal de viajes</button><button id="save-settings">Guardar configuración</button></div></form>';
+  el('save-settings').disabled = !ready;
+  updateTotal();
+}
+const fields = selector => Array.from(el('configuration').querySelectorAll(selector));
+const readRates = () => fields('.rate').map(input => units(input.value));
+function updateTotal() {
+  const rates = readRates();
+  el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total ingresado · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
+  el('rate-total').classList.toggle('error',!validRates(rates));
+}
+
+function localDay() {
+  const today = new Date();
+  return [today.getFullYear(),today.getMonth()+1,today.getDate()].map(part => String(part).padStart(2,'0')).join('-');
+}
+el('day').value = localDay();
+el('report-start').value = localDay().slice(0,4)+'-01-01';
+el('report-end').value = localDay();
+el('report-account').innerHTML = '<option value="">Todas las cuentas</option>'+options();
+el('report-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const start = el('report-start').value;
+  const end = el('report-end').value;
+  if (!validDay(start) || !validDay(end) || start > end) {
+    say('Selecciona un intervalo válido para el reporte.',true);
+    return;
+  }
+  const account = el('report-account').value === '' ? -1 : Number(el('report-account').value);
+  const rows = reportRows(state,start,end,account,el('report-type').value);
+  if (!rows.length) {
+    say('No hay movimientos que coincidan con ese período y esos filtros.',true);
+    return;
+  }
+  downloadFile(reportCsv(rows),'text/csv;charset=utf-8','Mara-Money-movimientos-'+start+'-a-'+end+'.csv');
+  say('Reporte descargado con '+rows.length+' movimientos.');
+});
+el('source').innerHTML = options();
+el('source').selectedIndex = -1;
+el('source').insertAdjacentHTML('afterbegin','<option value="" disabled selected>Selecciona una cuenta</option>');
+el('source').value = '';
+el('source').required = true;
+el('expense-day').value = el('day').value;
+el('expense-account').innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
+el('expense-category').innerHTML = expenseOptions();
+el('expenses').addEventListener('change',event => {
+  const field = event.target;
+  if (!field.matches('select[data-expense-index]')) return;
+  const index = Number(field.dataset.expenseIndex);
+  const category = field.value;
+  if (!boundedInt(index,0,state.expenses.length-1) || !validExpenseCategory(category)) return;
+  const expenses = state.expenses.map((expense,i) => i === index ? {...expense,category} : expense);
+  if (save({...state,expenses})) {
+    render();
+    el('category-'+index).focus();
+    say('Categoría del gasto actualizada.');
+  } else {
+    field.value = state.expenses[index].category || '';
+  }
+});
+el('expense').addEventListener('submit',event => {
+  event.preventDefault();
+  const day = el('expense-day').value;
+  const amount = units(el('expense-amount').value);
+  const accountValue = el('expense-account').value;
+  const account = Number(accountValue);
+  const note = el('expense-note').value.trim();
+  const category = el('expense-category').value;
+  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !accountValue
+      || !boundedInt(account,0,accounts.length-1) || !note || note.length > 120 || !validExpenseCategory(category)) {
+    say('Verifica la fecha, el importe, la cuenta y el concepto del gasto.',true);
+    return;
+  }
+  if (state.expenses.length >= maxEntries) {
+    say('Se alcanzó el límite de gastos de esta copia.',true);
+    return;
+  }
+  if (save({...state,expenses:[...state.expenses,{day,amount,account,note,category}]})) {
+    el('expense-amount').value = '';
+    el('expense-note').value = '';
+    el('expense-category').value = '';
+    render();
+    say('Gasto registrado en '+accounts[account]+'.');
+  }
+});
+el('opening-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const opening = accounts.map((_,index) => {
+    const value = el('opening-'+index).value.trim();
+    return value.startsWith('-') ? -units(value.slice(1)) : units(value || '0');
+  });
+  if (!opening.every(amount => boundedInt(amount,-maxIncome,maxIncome))) {
+    say('Verifica los saldos iniciales. Usa hasta dos decimales.',true);
+    return;
+  }
+  if (save({...state,opening})) {
+    renderOpening();
+    render();
+    say('Saldos iniciales guardados.');
+  }
+});
+el('amount').addEventListener('input',renderPreview);
+el('source').addEventListener('change',renderPreview);
+el('entry').addEventListener('submit',event => {
+  event.preventDefault();
+  const day = el('day').value;
+  const amount = units(el('amount').value);
+  const source = el('source').value === '' ? -1 : Number(el('source').value);
+  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !el('source').value || !boundedInt(source,0,accounts.length-1)) {
+    say('Verifica la fecha, la cuenta y el ingreso. El monto debe estar entre $0.01 y $1,000,000, con hasta dos decimales.',true);
+    return;
+  }
+  if (state.entries.some(entry => entry.day === day)) {
+    say('Ya hay un ingreso registrado para ese día. Cada fecha admite un total diario.',true);
+    return;
+  }
+  if (state.entries.length >= maxEntries) {
+    say('Se alcanzó el límite de registros de esta copia.',true);
+    return;
+  }
+  const entry = {day,amount,source,rates:[...state.rates],parts:allocate(amount,state.rates),done:accounts.map(() => false)};
+  if (save({...state,entries:[...state.entries,entry]})) {
+    el('amount').value = '';
+    render(day);
+    say('Ingreso registrado. Puedes actualizar las transferencias en el historial.');
+  }
+});
+function updateTransfer(event) {
+  const button = event.target.closest('button[data-day]');
+  if (!button) return;
+  const {day,index} = button.dataset;
+  const entry = state.entries.find(item => item.day === day);
+  const done = [...entry.done];
+  done[index] = !done[index];
+  const completedOn = entry.completedOn ? [...entry.completedOn] : accounts.map(() => null);
+  completedOn[index] = done[index] ? localDay() : null;
+  if (save({...state,entries:state.entries.map(item => item === entry ? {...entry,done,completedOn} : item)})) {
+    render(day);
+    if (event.currentTarget?.id === 'transfers') {
+      const nextPending = el('transfers').querySelectorAll('button[data-day]')[0];
+      (nextPending ?? el('transfers-title')).focus();
+    } else {
+      const nextButton = [...el('history').querySelectorAll('button[data-day]')].find(item => item.dataset.day === day && item.dataset.index === index);
+      nextButton?.focus();
+    }
+    say(done[index] ? 'Transferencia completada.' : 'Transferencia marcada como pendiente.');
+  }
+}
+el('manual-day').value = localDay();
+el('manual-day').max = localDay();
+for (const id of ['manual-source','manual-destination']) {
+  el(id).innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
+}
+el('manual-transfer').addEventListener('submit',event => {
+  event.preventDefault();
+  const day = el('manual-day').value;
+  const amount = units(el('manual-amount').value);
+  const from = el('manual-source').value;
+  const to = el('manual-destination').value;
+  const source = Number(from);
+  const destination = Number(to);
+  const note = el('manual-note').value.trim();
+  if (!validDay(day) || day > localDay() || !boundedInt(amount,1,maxIncome) || !from || !to
+      || !boundedInt(source,0,accounts.length-1) || !boundedInt(destination,0,accounts.length-1)
+      || source === destination || note.length > 120) {
+    say('Verifica la fecha, el importe y que las dos cuentas sean distintas.',true);
+    return;
+  }
+  if (state.manualTransfers.length >= maxEntries) {
+    say('Se alcanzó el límite de transferencias manuales de esta copia.',true);
+    return;
+  }
+  const move = {day,source,destination,amount,note};
+  if (save({...state,manualTransfers:[...state.manualTransfers,move]})) {
+    el('manual-amount').value = '';
+    el('manual-note').value = '';
+    el('manual-destination').value = '';
+    render();
+    say('Transferencia registrada y saldos actualizados.');
+  }
+});
+el('history').addEventListener('click',updateTransfer);
+el('transfers').addEventListener('click',updateTransfer);
+el('configuration').addEventListener('input',event => {
+  if (event.target.matches('.rate')) updateTotal();
+});
+el('configuration').addEventListener('click',event => {
+  if (event.target.id !== 'load-travel-plan') return;
+  fields('.rate').forEach((input,index) => { input.value = String(travelPlanRates[index]/100); });
+  updateTotal();
+  say('Plan temporal cargado. Pulsa Guardar configuración para aplicarlo a los próximos ingresos.');
+});
+el('configuration').addEventListener('submit',event => {
+  event.preventDefault();
+  const rates = readRates();
+  if (!validRates(rates)) {
+    say('Cada porcentaje debe estar entre 0 y 100, y el total debe ser exactamente 100 %. ',true);
+    return;
+  }
+  const purposes = fields('.purpose').map(input => input.value.trim());
+  const provisional = state.provisional && rates.every((rate,index) => rate === state.rates[index]);
+  if (save({...state,rates,purposes,provisional})) {
+    render();
+    say('Categorías y reparto guardados.');
+  }
+});
+function downloadFile(contents,type,filename) {
+  const url = URL.createObjectURL(new Blob([contents],{type}));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url),1000);
+}
+el('export').addEventListener('click',() => {
+  downloadFile(JSON.stringify(state,null,2),'application/json','Mara-Money-respaldo-'+el('day').value+'.json');
+});
+el('backup').addEventListener('change',async event => {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  try {
+    if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
+    const restored = validate(JSON.parse(await file.text()));
+    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos y '+restored.expenses.length+' gastos. ¿Reemplazar los registros y la configuración de esta copia?')) return;
+    if (save(restored,true)) {
+      renderSettings();
+      renderOpening();
+      render();
+      say('Respaldo importado.');
+    }
+  } catch (error) {
+    say('No se importó el respaldo. '+error.message,true);
+  }
+});
+const fontKey = 'mara-money-sticker-font-v1';
+const maxFontBytes = 512 * 1024;
+let activeStickerFont;
+async function loadStickerFont(bytes) {
+  const format = new DataView(bytes);
+  if (bytes.byteLength < 12 || bytes.byteLength > maxFontBytes
+      || ![0x00010000,0x4f54544f].includes(format.getUint32(0))) {
+    throw Error('Selecciona un archivo de fuente TTF u OTF válido.');
+  }
+  const font = new FontFace('Mara Uploaded Font',bytes);
+  await font.load();
+  if (activeStickerFont) document.fonts.delete(activeStickerFont);
+  document.fonts.add(font);
+  activeStickerFont = font;
+}
+async function restoreStickerFont() {
+  try {
+    const encoded = localStorage.getItem(fontKey);
+    if (!encoded) return;
+    if (encoded.length > Math.ceil(maxFontBytes/3)*4) throw Error('Fuente demasiado grande.');
+    await loadStickerFont(Uint8Array.from(atob(encoded),char => char.charCodeAt(0)).buffer);
+    el('sticker-font-status').textContent = 'Letra cargada en este navegador.';
+  } catch {
+    el('sticker-font-status').textContent = 'Vuelve a seleccionar el archivo de la fuente.';
+  }
+}
+const fontInput = el('sticker-font-file');
+fontInput.addEventListener('change',async () => {
+  const file = fontInput.files[0];
+  fontInput.value = '';
+  if (!file) return;
+  fontInput.disabled = true;
+  const status = el('sticker-font-status');
+  try {
+    if (file.size > maxFontBytes) throw Error('El archivo de la fuente supera el límite de 512 KB.');
+    const bytes = await file.arrayBuffer();
+    await loadStickerFont(bytes);
+    let raw = '';
+    for (const byte of new Uint8Array(bytes)) raw += String.fromCharCode(byte);
+    try {
+      localStorage.setItem(fontKey,btoa(raw));
+      status.textContent = 'Letra aplicada y guardada en este navegador.';
+    } catch {
+      status.textContent = 'Letra aplicada por ahora. El navegador no pudo guardarla.';
+    }
+  } catch (error) {
+    status.textContent = 'No se pudo cargar la letra. '+error.message;
+  } finally {
+    fontInput.disabled = false;
+  }
+});
+restoreStickerFont();
+// Do not expose the dashboard until authentication and cloud loading complete.
+cloudLock();
+renderSettings();
+renderOpening();
+render();
+el('cloud-form').addEventListener('submit',async event => {
+  event.preventDefault();
+  if (!cloudClient) return cloudMessage('No se cargó Supabase. Revisa tu conexión y recarga.',true);
+  cloudMessage('Iniciando sesión…');
+  const {error} = await cloudClient.auth.signInWithPassword({email:el('cloud-email').value.trim(),password:el('cloud-password').value});
+  if (error) cloudMessage('No se pudo iniciar sesión: '+error.message,true);
+  el('cloud-password').value = '';
+});
+el('cloud-signup').addEventListener('click',async () => {
+  if (!el('cloud-email').reportValidity() || !el('cloud-password').reportValidity()) return;
+  if (!cloudClient) return cloudMessage('No se cargó Supabase. Recarga la página.',true);
+  cloudMessage('Creando cuenta…');
+  const {data,error} = await cloudClient.auth.signUp({email:el('cloud-email').value.trim(),password:el('cloud-password').value,options:{emailRedirectTo:location.origin+location.pathname}});
+  el('cloud-password').value = '';
+  cloudMessage(error ? 'No se pudo crear la cuenta: '+error.message : data.session ? 'Cuenta creada. Cargando tus datos…' : 'Revisa tu correo y confirma la cuenta. Después inicia sesión.',!!error);
+});
+el('cloud-signout').addEventListener('click',async () => {
+  if (cloudPending || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
+  await cloudClient.auth.signOut();
+});
+el('cloud-retry').addEventListener('click',() => {
+  if (!cloudUser) return;
+  cloudFailed = false;
+  cloudMessage('Reintentando sincronización…');
+  void cloudFlush();
+});
+window.addEventListener('beforeunload',event => {
+  if (cloudPending || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
+});
+(async () => {
+  if (!window.supabase?.createClient) return cloudMessage('No se pudo cargar la librería de Supabase. Verifica Internet y recarga.',true);
+  try {
+    cloudClient = window.supabase.createClient(cloudUrl,cloudPublicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    cloudClient.auth.onAuthStateChange((event,session) => {
+      if (event === 'SIGNED_OUT') {
+        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudFailed = false;
+        state = initial(); cloudLock(); renderSettings(); renderOpening(); render();
+        cloudMessage('Inicia sesión para ver tus datos.');
+      } else if (event === 'SIGNED_IN' && session?.user && session.user.id !== cloudUser?.id) {
+        // Avoid invoking Supabase queries inside the auth callback.
+        setTimeout(() => void cloudLoad(session.user),0);
+      }
+    });
+    const {data,error} = await cloudClient.auth.getSession();
+    if (error) throw error;
+    if (data.session?.user && !cloudUser) await cloudLoad(data.session.user);
+    else if (!data.session) cloudMessage('Inicia sesión o crea tu cuenta.');
+  } catch (error) { cloudMessage('Error de conexión: '+error.message,true); }
+})();
+</script>
+</body>
+</html>
