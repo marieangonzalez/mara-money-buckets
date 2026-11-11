@@ -151,7 +151,12 @@ main {
   padding: clamp(20px, 4vw, 42px) clamp(12px, 3vw, 28px) 44px;
 }
 .workspace-group { min-width: 0; }
+main :is(h2,h3,h4) {
+  paint-order: stroke fill;
+  -webkit-text-stroke: var(--heading-outline, 2px) #fff;
+}
 .workspace-group > h2 {
+  --heading-outline: 3px;
   margin: 0 0 14px;
   padding-bottom: 8px;
   border-bottom: 1px solid #dcb9df;
@@ -178,6 +183,7 @@ main :is(section, h2, h3, h4, details)[id] { scroll-margin-top: 14px; }
 .workspace-grid section > h3:first-child, #cloud-title { display: table; margin-inline: auto; }
 .workspace-grid > details > summary h3 { display: inline-block; vertical-align: middle; }
 .workspace-grid section > h3:first-child, .workspace-grid > details > summary h3, #cloud-title {
+  --heading-outline: clamp(4px, .19em, 6px);
   margin-block: 0 15px;
   max-width: 100%;
   padding: .15em .46em .23em;
