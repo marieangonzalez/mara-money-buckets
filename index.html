@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mara Money Buckets</title>
+<title>Money Smart Buckets</title>
 <style>
 @font-face {
   font-family: "Mara Shooting Star";
@@ -131,7 +131,6 @@ header::after {
   clip-path: polygon(50% 0, 61% 38%, 100% 50%, 61% 62%, 50% 100%, 39% 62%, 0 50%, 39% 38%);
   content: "";
 }
-.hero-description { max-width: 500px; margin: 17px 0 0; color: #44234f; }
 .hero-art { justify-self: end; display: block; width: min(100%, 330px); height: auto; }
 .nav-bar { border-bottom: 1px solid var(--line); background: #fff8fa; }
 .quick-links { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 24px; }
@@ -259,7 +258,6 @@ td button, .money { white-space: nowrap; }
 
 /* Candy colors and sticker details */
 .hero { position: relative; }
-.hero-art { filter: drop-shadow(0 8px 12px #250d3c55); }
 .quick-links a:nth-child(3n+1) { background: #fce0f1; }
 .quick-links a:nth-child(3n+2) { background: #ede1ff; color: #59267d; }
 .quick-links a:nth-child(3n) { background: #eef5bd; color: #485020; }
@@ -317,37 +315,81 @@ body.cloud-locked .quick-links { display:none; }
 <div class="hero">
   <div>
     <p class="hero-tag">Tu registro financiero</p>
-    <h1 class="brand"><span>Mara</span> <span>Money</span> <span>Buckets</span></h1>
-    <p class="hero-description">Registra lo que cobras, reparte el dinero entre tus cuentas y lleva tus gastos al día.</p>
+    <h1 class="brand"><span>Money</span> <span>Smart</span> <span>Buckets</span></h1>
   </div>
   <svg class="hero-art" viewBox="0 0 340 220" aria-hidden="true" focusable="false">
-    <ellipse cx="184" cy="109" rx="132" ry="91" fill="none" stroke="#e1a9c4" stroke-opacity=".34"/>
-    <circle cx="187" cy="109" r="81" fill="#f8cadc" fill-opacity=".09"/>
-    <path d="M266 177c-8-11-22-1 0 15 22-16 8-26 0-15Z" fill="#ff96d6" stroke="#fff0fa" stroke-width="1.4"/>
-    <path d="m126 25 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#effb9b"/>
-    <circle cx="299" cy="83" r="4" fill="#effb9b"/>
-    <circle cx="63" cy="139" r="3.5" fill="#e2b5ff"/>
-    <path d="M56 88v22m-11-11h22M280 31v32m-16-16h32M309 143v21m-10-10h20M94 173v24m-12-12h24" stroke="#ffc0e6" stroke-width="2" stroke-linecap="round"/>
-    <g transform="rotate(-12 151 100)">
-      <rect x="83" y="55" width="144" height="93" rx="15" fill="#ff79c7"/>
-      <rect x="100" y="72" width="25" height="17" rx="4" fill="#722382"/>
-      <path d="M101 119h53m-53 9h30" stroke="#722382" stroke-width="3" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="hero-pink-card" x2="1" y2="1">
+        <stop stop-color="#ffd2ea"/><stop offset=".41" stop-color="#ed70b3"/><stop offset="1" stop-color="#9a3d8a"/>
+      </linearGradient>
+      <linearGradient id="hero-purple-card" x2=".88" y2="1">
+        <stop stop-color="#fff2ff"/><stop offset=".44" stop-color="#d6abea"/><stop offset="1" stop-color="#9871ba"/>
+      </linearGradient>
+      <linearGradient id="hero-chip-metal" x2="1" y2="1">
+        <stop stop-color="#a77838"/><stop offset=".27" stop-color="#fff1b0"/>
+        <stop offset=".57" stop-color="#d8b268"/><stop offset=".77" stop-color="#f9dfa2"/><stop offset="1" stop-color="#ad7a3a"/>
+      </linearGradient>
+      <radialGradient id="hero-coin-face" cx=".35" cy=".24" r=".8">
+        <stop stop-color="#fff5bd"/><stop offset=".6" stop-color="#efcd77"/><stop offset="1" stop-color="#b68034"/>
+      </radialGradient>
+      <linearGradient id="hero-coin-edge" x2="1" y2="0">
+        <stop stop-color="#9a652c"/><stop offset=".38" stop-color="#ebc877"/><stop offset=".73" stop-color="#c38a40"/><stop offset="1" stop-color="#925725"/>
+      </linearGradient>
+      <pattern id="hero-card-grain" width="4" height="4" patternUnits="userSpaceOnUse">
+        <path d="M0 1h4M0 3h4" stroke="#fff" stroke-width=".4" stroke-opacity=".22"/>
+      </pattern>
+      <filter id="hero-object-shadow" x="-30%" y="-35%" width="165%" height="180%">
+        <feDropShadow dx="1" dy="5" stdDeviation="5" flood-color="#52204f" flood-opacity=".35"/>
+      </filter>
+      <g id="hero-card-chip">
+        <rect width="27" height="20" rx="4" fill="url(#hero-chip-metal)" stroke="#996b3d" stroke-width=".65"/>
+        <path d="M0 6h6l4 4-4 4H0m27-8h-6l-4 4 4 4h6M10 0v20M17 0v20" fill="none" stroke="#8b603a" stroke-width=".7"/>
+        <path d="M3 3h21" stroke="#fff4c9" stroke-linecap="round" opacity=".72"/>
+      </g>
+      <g id="hero-stacked-coin">
+        <path d="M-18 0v4c0 4 8 7 18 7s18-3 18-7V0Z" fill="url(#hero-coin-edge)" stroke="#92602c" stroke-width=".75"/>
+        <path d="M-14 6v2m4-1v2m4-1v2m4-1v2m4-2v2m4-3v2m4-3v2m4-3v2" stroke="#815023" stroke-width=".6" opacity=".55"/>
+        <ellipse rx="18" ry="7" fill="url(#hero-coin-face)" stroke="#a77133" stroke-width=".8"/>
+        <ellipse rx="13.8" ry="4.7" fill="none" stroke="#ae7735" stroke-width=".65"/>
+        <path d="M-12-3q10-5 22-1" fill="none" stroke="#fff2bd" stroke-width=".85" stroke-linecap="round"/>
+      </g>
+    </defs>
+    <ellipse cx="184" cy="112" rx="132" ry="90" fill="none" stroke="#c892b8" opacity=".28"/>
+    <path d="m123 29 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#fff4c7"/>
+    <circle cx="294" cy="75" r="3.4" fill="#f9eca6"/>
+    <path d="M57 87v18m-9-9h18M282 27v22m-11-11h22" stroke="#ffe7f6" stroke-width="1.5" stroke-linecap="round"/>
+    <g filter="url(#hero-object-shadow)" transform="rotate(-13 145 102)">
+      <rect x="69" y="55" width="151" height="95" rx="12" fill="#934079"/>
+      <rect x="69" y="53" width="151" height="94" rx="12" fill="url(#hero-pink-card)" stroke="#ffc5e5" stroke-width=".8"/>
+      <rect x="70" y="54" width="149" height="92" rx="11" fill="url(#hero-card-grain)"/>
+      <path d="M77 66q-1-5 6-7h122" fill="none" stroke="#fff4fa" stroke-opacity=".62"/>
+      <path d="M179 65q10 11 31 12m-44-12q14 20 44 23m-54-22q15 27 54 32" fill="none" stroke="#ffe4f3" stroke-opacity=".34"/>
+      <use href="#hero-card-chip" x="83" y="75"/>
+      <path d="M86 117h24m-24 8h39" stroke="#722751" stroke-opacity=".69" stroke-width="2.3" stroke-linecap="round"/>
     </g>
-    <g transform="rotate(13 206 129)">
-      <rect x="139" y="85" width="139" height="92" rx="15" fill="#f1d7ff"/>
-      <path d="M140 113h137" stroke="#9b58cc" stroke-width="13"/>
-      <path d="M154 149h40m-40 9h25" stroke="#672085" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="252" cy="151" r="10" fill="#ff79c7"/>
-      <circle cx="240" cy="151" r="10" fill="#b45cf0" fill-opacity=".75"/>
+    <g filter="url(#hero-object-shadow)" transform="rotate(13 208 128)">
+      <rect x="127" y="84" width="164" height="101" rx="13" fill="#77508c"/>
+      <rect x="127" y="81" width="164" height="101" rx="13" fill="url(#hero-purple-card)" stroke="#fce7ff" stroke-width=".9"/>
+      <rect x="128" y="82" width="162" height="99" rx="12" fill="url(#hero-card-grain)"/>
+      <path d="M134 95q1-8 11-8h131" fill="none" stroke="#fff" stroke-opacity=".62"/>
+      <path d="M179 177q26-49 103-68m-113 67q29-60 113-76m-122 77q34-68 116-84" fill="none" stroke="#fff6ff" stroke-opacity=".25"/>
+      <use href="#hero-card-chip" x="142" y="103"/>
+      <path d="M178 109q3 4 0 8m4-11q5 7 0 14m4-17q7 10 0 20" fill="none" stroke="#593771" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M144 143h14m9 0h14m9 0h14m9 0h14" stroke="#f8eafa" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M144 143h14m9 0h14m9 0h14m9 0h14" stroke="#5a376d" stroke-width="1.6" stroke-linecap="round" transform="translate(0 -.8)"/>
+      <path d="M143 159h33m-33 5h22" stroke="#5e3d74" stroke-width="1.3" stroke-opacity=".75" stroke-linecap="round"/>
+      <circle cx="254" cy="157" r="9" fill="#7652aa"/><circle cx="265" cy="157" r="9" fill="#e778b2" fill-opacity=".86"/>
     </g>
-    <circle cx="119" cy="160" r="23" fill="#effb9b"/>
-    <circle cx="119" cy="160" r="17" fill="none" stroke="#897e34"/>
-    <path d="M124 153h-7a3.5 3.5 0 0 0 0 7h4a3.5 3.5 0 0 1 0 7h-8m6-17v20" fill="none" stroke="#5c501d" stroke-width="1.8" stroke-linecap="round"/>
-    <g transform="translate(306 179) rotate(8)" stroke="#82713b" stroke-width="1.4">
-      <path d="M-18 0v18c0 4 8 7 18 7s18-3 18-7V0Z" fill="#e2bd66"/>
-      <path d="M-18 8c0 4 8 7 18 7s18-3 18-7M-18 14c0 4 8 7 18 7s18-3 18-7" fill="none"/>
-      <ellipse rx="18" ry="7" fill="#f5ef9c"/>
-      <ellipse rx="12" ry="4" fill="none" stroke="#a38843"/>
+    <g filter="url(#hero-object-shadow)" transform="translate(109 160) rotate(-11)">
+      <circle cx="1.9" cy="1.7" r="23" fill="url(#hero-coin-edge)" stroke="#97602c"/>
+      <circle r="22.8" fill="url(#hero-coin-face)" stroke="#fff0b8" stroke-width=".9"/>
+      <circle r="19.6" fill="none" stroke="#9c652e" stroke-width="1.2" stroke-dasharray="1 1.45"/>
+      <circle r="16.9" fill="none" stroke="#bb813d" stroke-width=".8"/>
+      <path d="M5-7h-8a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7h-8M0-11v22" fill="none" stroke="#fff0b7" stroke-width="2.4" stroke-linecap="round" transform="translate(0 1)"/>
+      <path d="M5-7h-8a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7h-8M0-11v22" fill="none" stroke="#845023" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+    <g filter="url(#hero-object-shadow)" transform="translate(299 178) rotate(8)">
+      <use href="#hero-stacked-coin" y="9"/><use href="#hero-stacked-coin" y="4"/><use href="#hero-stacked-coin" y="-1"/>
     </g>
   </svg>
 </div>
