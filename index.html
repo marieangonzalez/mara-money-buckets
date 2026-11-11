@@ -172,6 +172,7 @@ p { margin: 6px 0 14px; }
 .muted { color: var(--muted); }
 form, .actions { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
 label { display: grid; gap: 5px; font-size: .92rem; font-weight: 650; }
+#couple-form label[hidden] { display: none; }
 input, select, button {
   max-width: 100%;
   min-height: 43px;
@@ -448,6 +449,14 @@ body.cloud-locked .quick-links { display:none; }
 <h2 id="couple-title">Finanzas de pareja</h2>
 <p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
 <div id="couple-balances"></div>
+<h3>Apartado de ahorros de él</h3>
+<form id="couple-savings-form">
+  <label>Cuenta del apartado <select id="couple-savings-account" required></select></label>
+  <label>Nombre del apartado <input id="couple-savings-label" maxlength="60" required placeholder="Escribe su nombre"></label>
+  <button type="submit">Guardar apartado</button>
+</form>
+<p class="muted">Este nombre se guarda en Mara Money. Haz los depósitos o retiros desde tu banco y regístralos aquí.</p>
+<div id="couple-savings-balances"></div>
 <label>Mes del presupuesto <input id="couple-month" type="month"></label>
 <div id="couple-budget"></div>
 <h3>Registrar movimiento</h3>
@@ -464,7 +473,8 @@ body.cloud-locked .quick-links { display:none; }
   </select></label>
   <label><span id="couple-amount-label">Importe</span> <input id="couple-amount" inputmode="decimal" required></label>
   <label>Concepto o motivo <input id="couple-note" maxlength="120" required></label>
-  <label>Cuenta o medio de pago <input id="couple-account" maxlength="120"></label>
+  <label id="couple-account-text">Cuenta o medio de pago <input id="couple-account" maxlength="120"></label>
+  <label id="couple-bank-field" hidden><span id="couple-bank-label">Cuenta</span> <select id="couple-bank"></select></label>
   <label>Recibo o referencia <input id="couple-reference" maxlength="300" placeholder="Confirmación, nombre del archivo o enlace privado"></label>
   <button type="submit" id="couple-save">Registrar movimiento</button>
 </form>
@@ -548,7 +558,7 @@ const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[]});
+const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
@@ -642,10 +652,19 @@ function coupleEffect(entry) {
   }
 }
 
+const coupleFundMovement = kind => kind === 'deposit' || kind === 'withdrawal';
+function validateCoupleSavings(value) {
+  if (value === null) return null;
+  if (!value || !boundedInt(value.account,0,accounts.length-1) || typeof value.label !== 'string'
+      || !value.label.trim() || value.label.length > 60) throw Error('Escoge una cuenta y escribe el nombre del apartado.');
+  return {account:value.account,label:value.label.trim()};
+}
+
 function coupleLedger(entries) {
   let available = 0;
   let fund = 0;
   const reversed = new Set();
+  const locations = new Map();
   const history = entries.map((entry,index) => {
     const original = entry.reverses === null ? entry : entries[entry.reverses];
     const direction = original === entry ? 1 : -1;
@@ -654,13 +673,19 @@ function coupleLedger(entries) {
       if (original.reverses !== null || reversed.has(entry.reverses)) throw Error('Esta anulación ya se registró o no es válida.');
       reversed.add(entry.reverses);
     }
-    if (fund + direction * fundChange < 0) throw Error('El movimiento supera el saldo del fondo de emergencia.');
+    if (fundChange) {
+      const key = original.savings?.account ?? null;
+      const balance = (locations.get(key)?.balance ?? 0) + direction * fundChange;
+      if (balance < 0) throw Error('El movimiento supera el saldo del fondo de emergencia en esa cuenta.');
+      const label = direction < 0 ? locations.get(key)?.label : original.savings?.label;
+      locations.set(key,{balance,label});
+    }
     if (entry.kind === 'deposit' && direction > 0 && entry.amount > available) throw Error('El depósito supera el sobrante disponible.');
     available += direction * cashChange;
     fund += direction * fundChange;
     return {entry,original,index,direction,available,fund};
   });
-  return {available,fund,history,reversed};
+  return {available,fund,history,reversed,locations};
 }
 
 function validateCouple(entries) {
@@ -677,7 +702,12 @@ function validateCouple(entries) {
     if (reverses !== null && (kind !== entries[reverses].kind || amount !== entries[reverses].amount || day < entries[reverses].day)) {
       throw Error('La anulación debe corresponder al movimiento original y tener una fecha igual o posterior.');
     }
-    return {kind,day,amount,note,account,reference,reverses};
+    const savings = validateCoupleSavings(Object.hasOwn(entry,'savings') ? entry.savings : null);
+    if ((savings && !coupleFundMovement(kind)) || (reverses !== null &&
+        (savings?.account !== entries[reverses].savings?.account || savings?.label !== entries[reverses].savings?.label))) {
+      throw Error('El apartado del movimiento no es válido.');
+    }
+    return {kind,day,amount,note,account,reference,reverses,...(savings ? {savings} : {})};
   });
   coupleLedger(checked);
   return checked;
@@ -747,7 +777,8 @@ function validate(data) {
   });
   return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
     creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
-    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [])};
+    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : []),
+    coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null)};
 }
 
 const el = id => document.getElementById(id);
@@ -804,10 +835,10 @@ function cloudLock() {
   el('cloud-retry').hidden = true;
   resetCardForms();
   el('couple-form').reset();
+  el('couple-savings-form').reset();
   el('couple-day').value = localDay();
   el('couple-month').value = '';
   el('couple-status').textContent = '';
-  updateCoupleAmount();
   renderCouple();
 }
 function cloudUnlock() {
@@ -1132,11 +1163,50 @@ function reportCsv(rows) {
     name(item.destination),category(item.destination),item.note,(item.amount/100).toFixed(2),item.dateBasis]);
   return '\uFEFF'+[header,...lines].map(cells => cells.map(csvCell).join(',')).join('\r\n')+'\r\n';
 }
-function updateCoupleAmount() {
-  el('couple-amount-label').textContent = coupleShared(el('couple-kind').value) ? 'Importe total del recibo' : 'Importe';
+function coupleLocationName(account,label) {
+  if (account === null) return 'Sin apartado asignado';
+  return label ? accounts[account]+' · '+label : accounts[account];
 }
 
-function renderCouple() {
+function renderCoupleSetup() {
+  const account = el('couple-savings-account');
+  account.innerHTML = '<option value="">Escoge una cuenta</option>'+options();
+  const savings = state.coupleSavings;
+  account.value = savings?.account ?? '';
+  el('couple-savings-label').value = savings?.label ?? '';
+}
+
+function renderCoupleBank(locations,preserve=false) {
+  const kind = el('couple-kind').value;
+  const fundMovement = coupleFundMovement(kind);
+  const chooseBank = fundMovement || kind === 'contribution';
+  const bank = el('couple-bank');
+  const previous = bank.value;
+  const savings = state.coupleSavings;
+  el('couple-amount-label').textContent = coupleShared(kind) ? 'Importe total del recibo' : 'Importe';
+  el('couple-bank-field').hidden = !chooseBank;
+  el('couple-account-text').hidden = chooseBank;
+  el('couple-bank-label').textContent = kind === 'withdrawal' ? 'Cuenta de retiro' : 'Cuenta donde se depositó';
+
+  if (kind === 'withdrawal') {
+    bank.innerHTML = [...locations].filter(([,location]) => location.balance > 0).map(([account,location]) => {
+      const label = savings?.account === account ? savings.label : location.label;
+      return '<option value="'+(account ?? '')+'">'+safe(coupleLocationName(account,label))+'</option>';
+    }).join('') || '<option value="">Sin saldo para retirar</option>';
+  } else {
+    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+accounts.map((name,account) => {
+      const label = kind === 'deposit' && savings?.account === account ? savings.label : '';
+      return '<option value="'+account+'">'+safe(coupleLocationName(account,label))+'</option>';
+    }).join('');
+  }
+  if (preserve && [...bank.options].some(option => option.value === previous)) {
+    bank.value = previous;
+  } else if (savings && [...bank.options].some(option => option.value === String(savings.account))) {
+    bank.value = String(savings.account);
+  }
+}
+
+function renderCouple(preserveBank=true) {
   const history = el('couple-history');
   const balances = el('couple-balances');
   const budget = el('couple-budget');
@@ -1145,12 +1215,21 @@ function renderCouple() {
     history.replaceChildren();
     balances.replaceChildren();
     budget.replaceChildren();
+    el('couple-savings-balances').replaceChildren();
+    el('couple-bank').replaceChildren();
     return;
   }
   el('couple-month').value ||= localDay().slice(0,7);
   el('couple-day').value ||= localDay();
   const month = el('couple-month').value;
-  const {available,fund,history:entries,reversed} = coupleLedger(state.coupleFinances);
+  const {available,fund,history:entries,reversed,locations} = coupleLedger(state.coupleFinances);
+  const savings = state.coupleSavings;
+  if (savings && !locations.has(savings.account)) locations.set(savings.account,{balance:0,label:savings.label});
+  el('couple-savings-balances').innerHTML = locations.size ? table(['Cuenta y apartado','Saldo reservado'],
+    [...locations].map(([account,location]) => row([
+      safe(coupleLocationName(account,savings?.account === account ? savings.label : location.label)),cash(location.balance)
+    ]))) : '';
+  renderCoupleBank(locations,preserveBank);
   balances.innerHTML = table(['Sobrante disponible','Fondo de emergencia de él','Total bajo tu custodia'],
     [row([cash(available),cash(fund),cash(available+fund)])]);
   const actual = coupleBudget(state.coupleFinances,month,reversed);
@@ -1173,7 +1252,7 @@ function renderCouple() {
     entries.slice().reverse().map(({entry,index,direction,available,fund}) => row([
       (index+1)+' · '+safe(entry.day),
       (direction < 0 ? 'Anulación de #'+(entry.reverses+1)+' · ' : '')+coupleKinds.get(entry.kind)+'<br>'+safe(entry.note),
-      cash(direction*entry.amount),cash(direction*coupleShare(entry)),safe(entry.account || '—'),
+      cash(direction*entry.amount),cash(direction*coupleShare(entry)),safe(entry.savings ? coupleLocationName(entry.savings.account,entry.savings.label) : entry.account || '—'),
       safe(entry.reference || '—'),cash(available),cash(fund),
       direction < 0 ? '—' : reversed.has(index) ? 'Anulado'
         : '<button type="button" class="secondary" data-couple-reverse="'+index+'" aria-label="Anular movimiento '+(index+1)+'">Anular</button>'
@@ -1198,15 +1277,38 @@ function recordCouple(entry) {
   }
 }
 
-el('couple-kind').addEventListener('change',updateCoupleAmount);
-el('couple-month').addEventListener('change',renderCouple);
+el('couple-savings-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const account = el('couple-savings-account').value;
+  const label = el('couple-savings-label').value.trim();
+  if (!account || !label) {
+    el('couple-status').textContent = 'Escoge una cuenta y escribe el nombre del apartado.';
+    return;
+  }
+  if (save({...state,coupleSavings:{account:Number(account),label}})) {
+    renderCoupleSetup();
+    renderCouple(false);
+    el('couple-status').textContent = 'Apartado configurado. Los movimientos anteriores conservan su cuenta.';
+  }
+});
+el('couple-kind').addEventListener('change',() => renderCoupleBank(coupleLedger(state.coupleFinances).locations));
+el('couple-month').addEventListener('change',() => renderCouple());
 el('couple-form').addEventListener('submit',event => {
   event.preventDefault();
+  const kind = el('couple-kind').value;
+  const selected = el('couple-bank').value;
+  const account = selected === '' ? null : Number(selected);
   const entry = {
-    kind:el('couple-kind').value, day:el('couple-day').value,
+    kind, day:el('couple-day').value,
     amount:units(el('couple-amount').value), note:el('couple-note').value.trim(),
-    account:el('couple-account').value.trim(), reference:el('couple-reference').value.trim(), reverses:null
+    account:kind === 'contribution' ? accounts[account] ?? '' : coupleFundMovement(kind) ? '' : el('couple-account').value.trim(),
+    reference:el('couple-reference').value.trim(), reverses:null
   };
+  if (coupleFundMovement(kind) && account !== null) {
+    const current = state.coupleSavings;
+    const prior = coupleLedger(state.coupleFinances).locations.get(account);
+    entry.savings = {account,label:current?.account === account ? current.label : prior?.label || 'Ahorros de él'};
+  }
   if (recordCouple(entry)) {
     for (const id of ['couple-amount','couple-note','couple-account','couple-reference']) el(id).value = '';
   }
@@ -1237,7 +1339,8 @@ function render(openDay) {
   renderExpenses();
   renderProjection();
   renderCards();
-  renderCouple();
+  renderCoupleSetup();
+  renderCouple(false);
 }
 function renderSettings() {
   const accountRows = accounts.map((name,index) => row([name,
@@ -1605,7 +1708,9 @@ el('backup').addEventListener('change',async event => {
     if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
     const raw = JSON.parse(await file.text());
     if (epoch !== cloudEpoch) return;
-    const restored = validate(Object.hasOwn(raw ?? {},'coupleFinances') ? raw : {...raw,coupleFinances:state.coupleFinances});
+    const restored = validate({
+      coupleFinances:state.coupleFinances,coupleSavings:state.coupleSavings,...raw
+    });
     if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas y '+restored.coupleFinances.length+' movimientos de pareja. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
     if (save(restored,true)) {
       resetCardForms();
