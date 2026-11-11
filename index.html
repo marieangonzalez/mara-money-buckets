@@ -62,7 +62,7 @@ header::after {
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.58' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
 }
-.hero, main, .quick-links { max-width: 1380px; margin: auto; }
+.hero, main, .quick-menu { max-width: 1380px; margin: auto; }
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(190px, 38%);
@@ -132,17 +132,92 @@ header::after {
   content: "";
 }
 .hero-art { justify-self: end; display: block; width: min(100%, 450px); height: auto; }
-.nav-bar { border-bottom: 1px solid var(--line); background: #fff8fa; }
-.quick-links { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 24px; }
-.quick-links a {
-  padding: 7px 12px;
-  border-radius: 100px;
-  color: var(--purple);
-  font-size: .9rem;
-  font-weight: 650;
-  text-decoration: none;
+html { scroll-padding-top: 58px; }
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--line);
+  background: #fff8fa;
 }
-.quick-links a:hover { background: var(--pale); }
+.quick-menu { position: relative; padding: 7px clamp(12px, 3vw, 28px); }
+.quick-menu > summary {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px;
+  border: 1px solid #d2abdc;
+  border-radius: 100px;
+  background: #f6e9fb;
+  color: #59266c;
+  box-shadow: 0 2px 0 #e2bee7;
+  font: 400 1.05rem/1.2 var(--sticker-font);
+  list-style: none;
+}
+.quick-menu > summary::-webkit-details-marker { display: none; }
+.quick-menu > summary::after {
+  width: .48em;
+  height: .48em;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: translateY(-.12em) rotate(45deg);
+}
+.quick-menu[open] > summary::after { transform: translateY(.12em) rotate(225deg); }
+.quick-menu > summary:hover { background: #efd9f5; }
+.quick-current {
+  color: var(--muted);
+  font: 650 .79rem/1.25 var(--body-font);
+}
+.quick-links {
+  position: absolute;
+  inset: calc(100% + 5px) auto auto clamp(12px, 3vw, 28px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  width: min(515px, calc(100% - 24px));
+  max-height: min(70vh, 480px);
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid #e3c8e8;
+  border-radius: 16px;
+  background: #fffaff;
+  box-shadow: 0 8px 25px #48204732;
+}
+.quick-menu:not([open]) .quick-links { display: none; }
+.quick-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  padding: 5px 11px;
+  border: 1px solid var(--link-edge, #e7adcf);
+  border-radius: 100px;
+  background: var(--link-fill, #fce0f1);
+  color: var(--link-ink, #752353);
+  box-shadow: 0 2px 0 var(--link-edge, #e7adcf);
+  font: 400 1.02rem/1.2 var(--sticker-font);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+.quick-links a:nth-child(3n+2) { --link-fill: #ede1ff; --link-edge: #c6a8e8; --link-ink: #59267d; }
+.quick-links a:nth-child(3n) { --link-fill: #eef5bd; --link-edge: #c5d389; --link-ink: #485020; }
+.quick-links a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--link-edge, #e7adcf), 0 6px 9px #57275925;
+}
+.quick-links a[aria-current="location"] {
+  border-color: #753c84;
+  background: #693578;
+  color: #fff;
+  box-shadow: 0 2px 0 #462251;
+}
+.quick-links a:active { transform: translateY(1px); box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .quick-links a { transition: none; }
+}
 
 main {
   display: grid;
@@ -165,6 +240,17 @@ main :is(h2,h3,h4) {
 }
 .workspace-grid, .entry-grid { display: grid; min-width: 0; gap: 16px; }
 .entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+@media (min-width: 1080px) {
+  #special-accounts-title + .workspace-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+  #tracking-title + .workspace-grid, #preferences-title + .workspace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  #financial-analysis, #report-section, #settings[open], #backup-section[open] { grid-column: 1 / -1; }
+}
 .workspace-grid > section, .workspace-grid > details, .entry-grid > section, #cloud-access {
   box-shadow: 0 3px 0 #eccded, 0 8px 20px #4e254710;
 }
@@ -246,8 +332,8 @@ td button, .money { white-space: nowrap; }
 @media (max-width: 620px) {
   .hero { grid-template-columns: minmax(0, 1fr); gap: 0; }
   .hero-art { display: none; }
-  .quick-links { padding-inline: 10px; }
-  .quick-links a { padding: 5px 9px; }
+  .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(360px, calc(100% - 24px)); }
+  .quick-links a { padding: 5px 8px; }
   main { gap: 24px; }
   th, td { padding: 7px 8px; }
 }
@@ -258,10 +344,6 @@ td button, .money { white-space: nowrap; }
 
 /* Candy colors and sticker details */
 .hero { position: relative; }
-.quick-links a:nth-child(3n+1) { background: #fce0f1; }
-.quick-links a:nth-child(3n+2) { background: #ede1ff; color: #59267d; }
-.quick-links a:nth-child(3n) { background: #eef5bd; color: #485020; }
-.quick-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
 #income { border-top: 4px solid #e04ba6; }
 #moves { border-top: 4px solid #9e67de; }
 #spending { border-top: 4px solid #afc94d; }
@@ -307,7 +389,7 @@ td button, .money { white-space: nowrap; }
 #cloud-access input { width: min(100%, 340px); }
 #cloud-access .cloud-message { font-weight: 650; }
 body.cloud-locked main > :not(#cloud-access):not(#status) { display:none !important; }
-body.cloud-locked .quick-links { display:none; }
+body.cloud-locked .nav-bar { display:none; }
 </style>
 </head>
 <body>
@@ -395,6 +477,8 @@ body.cloud-locked .quick-links { display:none; }
 </div>
 </header>
 <div class="nav-bar">
+<details id="quick-menu" class="quick-menu">
+<summary>Menú de secciones <span id="quick-current" class="quick-current" aria-hidden="true"></span></summary>
 <nav class="quick-links" aria-label="Accesos rápidos">
   <a href="#account-balances">Saldos</a>
   <a href="#income">Ingresos</a>
@@ -408,6 +492,7 @@ body.cloud-locked .quick-links { display:none; }
   <a href="#settings">Reparto</a>
   <a href="#backup-section">Respaldo y sesión</a>
 </nav>
+</details>
 </div>
 <main>
 <section id="cloud-access" aria-labelledby="cloud-title">
@@ -589,7 +674,7 @@ body.cloud-locked .quick-links { display:none; }
 <p class="muted">Se actualiza con tus ingresos, gastos y transferencias registrados. Úsalo para ver qué está consumiendo el saldo de cada cuenta y cómo podría cerrar el año si mantienes el mismo ritmo.</p>
 <div id="projection-result"></div>
 </section>
-<section aria-labelledby="report-title">
+<section id="report-section" aria-labelledby="report-title">
 <h3 id="report-title">Reporte para tu contable</h3>
 <p class="muted">Descarga un CSV para abrir en Excel. Las transferencias completadas aparecen una vez, con su origen y destino.</p>
 <form id="report-form">
@@ -958,6 +1043,7 @@ function cloudMessage(message,error=false) {
 }
 function cloudLock() {
   ready = false;
+  el('quick-menu').open = false;
   if (bankAccountSync) bankAccountSync.hidden = true;
   bankAccountSync = null;
   document.body.classList.add('cloud-locked');
@@ -985,6 +1071,12 @@ function cloudUnlock() {
   el('cloud-user').textContent = 'Sesión: ' + cloudUser.email;
   ready = true;
   renderSettings(); renderOpening(); render();
+  const target = quickDestinations.find(({link}) => link.hash === location.hash)?.section;
+  if (target) {
+    if (target.matches('details')) target.open = true;
+    target.scrollIntoView?.();
+  }
+  scheduleQuickLinkUpdate();
 }
 async function cloudLoad(user) {
   const epoch = ++cloudEpoch;
@@ -1980,6 +2072,55 @@ fontInput.addEventListener('change',async () => {
 });
 restoreStickerFont();
 // Do not expose the dashboard until authentication and cloud loading complete.
+const quickBar = document.querySelector('.nav-bar');
+const quickMenu = el('quick-menu');
+const quickSummary = quickMenu.querySelector('summary');
+const quickDestinations = [...quickMenu.querySelectorAll('a[href^="#"]')].map(link => ({
+  link,section:el(link.hash.slice(1))
+}));
+let quickLinkUpdateQueued = false;
+function markQuickLink(current) {
+  el('quick-current').textContent = '· '+current.textContent;
+  for (const {link} of quickDestinations) {
+    if (link === current) link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  }
+}
+function scheduleQuickLinkUpdate() {
+  if (quickLinkUpdateQueued || !ready) return;
+  quickLinkUpdateQueued = true;
+  const update = () => {
+    quickLinkUpdateQueued = false;
+    if (!ready) return;
+    const threshold = Math.max(0,quickBar.getBoundingClientRect().bottom) + 48;
+    const bottom = window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    const current = bottom ? quickDestinations.at(-1)
+      : quickDestinations.findLast(({section}) => section.getBoundingClientRect().top <= threshold) ?? quickDestinations[0];
+    markQuickLink(current.link);
+  };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(update);
+  else window.setTimeout(update,0);
+}
+for (const {link,section} of quickDestinations) {
+  section.tabIndex = -1;
+  link.addEventListener('click',() => {
+    quickMenu.open = false;
+    markQuickLink(link);
+    section.focus({preventScroll:true});
+  });
+}
+document.addEventListener('click',event => {
+  if (quickMenu.open && !quickMenu.contains(event.target)) quickMenu.open = false;
+});
+document.addEventListener('keydown',event => {
+  if (event.key === 'Escape' && quickMenu.open) {
+    quickMenu.open = false;
+    quickSummary.focus();
+  }
+});
+window.addEventListener('scroll',scheduleQuickLinkUpdate,{passive:true});
+window.addEventListener('resize',scheduleQuickLinkUpdate);
+
 cloudLock();
 renderSettings();
 renderOpening();
