@@ -156,7 +156,7 @@ main {
   border-bottom: 1px solid #dcb9df;
   color: #542060;
   font: 600 clamp(1.5rem, 2.7vw, 2.2rem)/1.22 var(--display);
-  text-shadow: 0 1px 0 #fff, 0 3px 5px #7d3b8a3d;
+  text-shadow: 0 1px 0 #fff, 0 2px 0 #ddb1e5, 0 4px 7px #65327655;
 }
 .workspace-grid, .entry-grid { display: grid; min-width: 0; gap: 16px; }
 .entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
@@ -172,20 +172,31 @@ main :is(section, h2, h3, h4, details)[id] { scroll-margin-top: 14px; }
   border-radius: 16px;
   background: var(--surface);
 }
-.workspace-grid > details > summary h3 { display: inline; }
-.workspace-grid > details[open] > summary { margin-bottom: 10px; }
+.workspace-grid > details > summary { text-align: center; }
+.workspace-grid > details[open] > summary { margin-bottom: 14px; }
+.workspace-grid section > h3:first-child, #cloud-title { display: table; margin-inline: auto; }
+.workspace-grid > details > summary h3 { display: inline-block; vertical-align: middle; }
 .workspace-grid section > h3:first-child, .workspace-grid > details > summary h3, #cloud-title {
-  margin: 0 0 12px;
+  margin-block: 0 15px;
+  max-width: 100%;
+  padding: .15em .46em .23em;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  background: var(--heading-fill, #fff0f8);
+  box-shadow: 0 0 0 1px var(--heading-edge, #e7b6db),
+    2px 4px 0 var(--heading-edge, #e7b6db), 3px 7px 10px #5c235a30;
   color: #391847;
   font: 400 clamp(1.27rem, 2.25vw, 1.72rem)/1.24 var(--sticker-font);
-  text-shadow: 0 1px 0 #fff, 0 2px 0 #e2b7e8, 0 4px 7px #5f2a7138;
+  text-align: center;
+  text-shadow: 0 1px 0 #b878bb, 0 2px 0 #a56aaa, 1px 3px 1px #70407888,
+    1px 5px 7px #43204c66;
   overflow-wrap: anywhere;
 }
 .workspace-grid h4 {
   margin: 18px 0 6px;
   color: #542060;
   font: 600 clamp(1.01rem, 1.45vw, 1.18rem)/1.35 var(--display);
-  text-shadow: 0 1px 0 #fff, 0 2px 4px #7d3b8a2b;
+  text-shadow: 0 1px 0 #ead0ec, 0 3px 5px #67317442;
 }
 summary { cursor: pointer; font-weight: 750; color: var(--purple); }
 p { margin: 6px 0 14px; }
@@ -249,6 +260,8 @@ td button, .money { white-space: nowrap; }
 #income { border-top: 4px solid #e04ba6; }
 #moves { border-top: 4px solid #9e67de; }
 #spending { border-top: 4px solid #afc94d; }
+#spending, #financial-analysis { --heading-fill: #f5fadf; --heading-edge: #c5d982; }
+#moves, #history-section, #settings, #cloud-access { --heading-fill: #f6edff; --heading-edge: #c9abea; }
 
 #card-form { margin-top: 12px; }
 .analysis-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
