@@ -64,10 +64,10 @@ header::after {
 .hero, main, .quick-links { max-width: 1380px; margin: auto; }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(215px, 44%);
+  grid-template-columns: minmax(0, 1fr) minmax(155px, 32%);
   align-items: center;
   gap: 22px;
-  padding: 48px 26px 42px;
+  padding: 24px clamp(16px, 3vw, 28px);
 }
 .hero-tag {
   display: flex;
@@ -88,7 +88,6 @@ header::after {
   transform: rotate(45deg);
   content: "";
 }
-h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
 .brand {
   display: flex;
   justify-content: flex-start;
@@ -99,7 +98,7 @@ h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
   margin: 0;
   padding: .04em 0 .10em;
   color: #ffd2eb;
-  font: 400 clamp(2.45rem, 6.8vw, 6.3rem)/1.15 var(--sticker-font);
+  font: 400 clamp(2.15rem, 5.1vw, 4.55rem)/1.15 var(--sticker-font);
   letter-spacing: -.035em;
   paint-order: stroke fill;
   -webkit-text-stroke: clamp(2px, .042em, 4px) #50226b;
@@ -132,7 +131,7 @@ h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
   content: "";
 }
 .hero-description { max-width: 500px; margin: 17px 0 0; color: #44234f; }
-.hero-art { justify-self: end; display: block; width: min(100%, 570px); height: auto; }
+.hero-art { justify-self: end; display: block; width: min(100%, 330px); height: auto; }
 .nav-bar { border-bottom: 1px solid var(--line); background: #fff8fa; }
 .quick-links { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 24px; }
 .quick-links a {
@@ -144,34 +143,55 @@ h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
   text-decoration: none;
 }
 .quick-links a:hover { background: var(--pale); }
+
 main {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 32px 18px;
-  padding: 34px 20px 48px;
+  gap: 30px;
+  padding: clamp(20px, 4vw, 42px) clamp(12px, 3vw, 28px) 44px;
 }
-#status { grid-column: 1 / -1; z-index: 1; }
-@media (max-width: 760px) {
-  main { grid-template-columns: minmax(0, 1fr); }
+.workspace-group { min-width: 0; }
+.workspace-group > h2 {
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dcb9df;
+  color: #542060;
+  font: 600 clamp(1.5rem, 2.7vw, 2.2rem)/1.22 var(--display);
+  text-shadow: 0 1px 0 #fff, 0 3px 5px #7d3b8a3d;
 }
-section, details {
+.workspace-grid, .entry-grid { display: grid; min-width: 0; gap: 16px; }
+.entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+.workspace-grid > section, .workspace-grid > details, .entry-grid > section, #cloud-access {
+  box-shadow: 0 3px 0 #eccded, 0 8px 20px #4e254710;
+}
+main :is(section, h2, h3, h4, details)[id] { scroll-margin-top: 14px; }
+#status { z-index: 1; }
+.workspace-grid :is(section, details), #cloud-access {
   min-width: 0;
-  padding: 22px;
+  padding: clamp(14px, 2.4vw, 24px);
   border: 1px solid var(--line);
-  border-radius: 17px;
+  border-radius: 16px;
   background: var(--surface);
 }
-main > section, main > details { box-shadow: 0 4px 18px #4e25470a; scroll-margin-top: 14px; }
-#income { border-top: 4px solid #e04ba6; }
-h2 { margin: 0 0 8px; font-size: clamp(1.55rem, 4vw, 2.05rem); line-height: 1.12; }
-h3 { margin: 18px 0 5px; font: 400 1rem/1.4 var(--display); }
+.workspace-grid > details > summary h3 { display: inline; }
+.workspace-grid > details[open] > summary { margin-bottom: 10px; }
+.workspace-grid section > h3:first-child, .workspace-grid > details > summary h3, #cloud-title {
+  margin: 0 0 12px;
+  color: #391847;
+  font: 400 clamp(1.27rem, 2.25vw, 1.72rem)/1.24 var(--sticker-font);
+  text-shadow: 0 1px 0 #fff, 0 2px 0 #e2b7e8, 0 4px 7px #5f2a7138;
+  overflow-wrap: anywhere;
+}
+.workspace-grid h4 {
+  margin: 18px 0 6px;
+  color: #542060;
+  font: 600 clamp(1.01rem, 1.45vw, 1.18rem)/1.35 var(--display);
+  text-shadow: 0 1px 0 #fff, 0 2px 4px #7d3b8a2b;
+}
 summary { cursor: pointer; font-weight: 750; color: var(--purple); }
-summary h2 { display: inline; }
 p { margin: 6px 0 14px; }
 .muted { color: var(--muted); }
 form, .actions { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
-label { display: grid; gap: 5px; font-size: .92rem; font-weight: 650; }
+label { display: grid; min-width: 0; max-width: 100%; gap: 5px; font-size: .92rem; font-weight: 650; }
 #couple-form label[hidden] { display: none; }
 input, select, button {
   max-width: 100%;
@@ -203,13 +223,20 @@ td button, .money { white-space: nowrap; }
 #status:empty { display: none; }
 #status { position: sticky; bottom: 8px; margin: 0; border: 1px solid var(--line); background: #fffaff; box-shadow: 0 3px 12px #451e3d24; }
 #settings table input[type=text] { width: 100%; min-width: 130px; }
+@media (max-width: 780px) {
+  .entry-grid { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 620px) {
-  .hero { grid-template-columns: minmax(0, 1fr); padding: 29px 18px 26px; gap: 10px; }
-  .hero-art { width: min(100%, 400px); justify-self: center; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .hero-art { display: none; }
   .quick-links { padding-inline: 10px; }
-  main { padding: 26px 10px 34px; }
-  section, details { padding: 14px; }
+  .quick-links a { padding: 5px 9px; }
+  main { gap: 24px; }
   th, td { padding: 7px 8px; }
+}
+@media (max-width: 480px) {
+  form label { flex: 1 0 100%; }
+  #amount, #expense-amount { width: 100%; }
 }
 
 /* Candy colors and sticker details */
@@ -219,12 +246,10 @@ td button, .money { white-space: nowrap; }
 .quick-links a:nth-child(3n+2) { background: #ede1ff; color: #59267d; }
 .quick-links a:nth-child(3n) { background: #eef5bd; color: #485020; }
 .quick-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
-main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e25470a; }
 #income { border-top: 4px solid #e04ba6; }
 #moves { border-top: 4px solid #9e67de; }
 #spending { border-top: 4px solid #afc94d; }
 
-#financial-analysis, #credit-cards { grid-column: 1 / -1; }
 #card-form { margin-top: 12px; }
 .analysis-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .analysis-metrics > div { padding: 10px 13px; border-radius: 11px; background: var(--pale); }
@@ -238,30 +263,6 @@ main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e2547
 .category-chart li:nth-child(3n+2) .category-fill { background: #9356ce; }
 .category-chart li:nth-child(3n) .category-fill { background: #7c9829; }
 
-main > section > h2, main > details > summary > h2 {
-  margin: 0 0 12px;
-  max-width: 100%;
-  padding: .16em .45em .22em;
-  border: 3px solid #fff;
-  border-radius: 10px;
-  background: var(--title-plate, #fff0f8);
-  color: #391847;
-  box-shadow: 0 0 0 1px var(--title-shadow, #edb9df), 2px 4px 0 var(--title-shadow, #edb9df),
-    3px 7px 10px #5c235a28;
-  font: 400 clamp(1.35rem, 3.1vw, 1.75rem)/1.2 var(--sticker-font);
-  text-transform: capitalize;
-  letter-spacing: .01em;
-  paint-order: stroke fill;
-  -webkit-text-stroke: clamp(4px, .19em, 6px) #fff;
-}
-main > section > h2 { display: table; margin-top: -34px; margin-inline: auto; text-align: center; }
-main > details > summary { margin-top: -34px; text-align: center; }
-main > details > summary > h2 { vertical-align: middle; }
-#spending, #financial-analysis { --title-shadow: #c5d982; --title-plate: #f5fadf; }
-#moves, #history-section, #settings { --title-shadow: #c9abea; --title-plate: #f6edff; }
-@media (max-width: 620px) {
-  main > section > h2, main > details > summary { margin-top: -25px; }
-}
 
 .state-chip, .balance-chip {
   display: inline-block;
@@ -283,7 +284,7 @@ main > details > summary > h2 { vertical-align: middle; }
 
 
 /* Cloud sign-in */
-#cloud-access { grid-column: 1 / -1; border-top: 4px solid #9e67de; }
+#cloud-access { border-top: 4px solid #9e67de; }
 #cloud-access form { margin-top: 12px; }
 #cloud-access input { width: min(100%, 340px); }
 #cloud-access .cloud-message { font-weight: 650; }
@@ -333,15 +334,16 @@ body.cloud-locked .quick-links { display:none; }
 </header>
 <div class="nav-bar">
 <nav class="quick-links" aria-label="Accesos rápidos">
+  <a href="#account-balances">Saldos</a>
   <a href="#income">Ingresos</a>
   <a href="#spending">Gastos</a>
   <a href="#moves">Transferencias</a>
-  <a href="#account-balances">Saldos</a>
   <a href="#credit-cards">Tarjetas</a>
   <a href="#couple-finances">Finanzas de pareja</a>
   <a href="#history-section">Historial</a>
   <a href="#projection-title">Análisis</a>
   <a href="#report-title">Reportes</a>
+  <a href="#settings">Reparto</a>
   <a href="#backup-section">Respaldo y sesión</a>
 </nav>
 </div>
@@ -360,50 +362,12 @@ body.cloud-locked .quick-links { display:none; }
   <p class="muted">Si confirmas tu correo por email, regresa a esta página para iniciar sesión.</p>
 </div>
 </section>
-<section id="income" aria-labelledby="entry-title">
-<h2 id="entry-title">Registrar ingreso</h2>
-<p id="plan" class="note"></p>
-<p><a id="income-plan-settings" href="#settings">Configurar el reparto de ingresos</a></p>
-<form id="entry">
-<label>Fecha <input id="day" type="date" required></label>
-<label>Ingreso ($) <input id="amount" inputmode="decimal" type="text" placeholder="250.00" required></label>
-<label>Cuenta que recibió el ingreso <select id="source"></select></label>
-<button id="save-entry">Registrar y repartir</button>
-</form>
-<div id="preview" class="spaced" aria-live="polite"></div>
-</section>
-<section id="spending" aria-labelledby="expense-title">
-<h2 id="expense-title">Registrar gasto</h2>
-<form id="expense">
-<label>Fecha <input id="expense-day" type="date" required></label>
-<label>Importe ($) <input id="expense-amount" type="text" inputmode="decimal" placeholder="23.00" required></label>
-<label>Cuenta de donde salió <select id="expense-account" required></select></label>
-<label>Concepto <input id="expense-note" type="text" maxlength="120" placeholder="Almuerzo" required></label>
-<label>Categoría del gasto <select id="expense-category"></select></label>
-<button id="save-expense">Registrar gasto</button>
-</form>
-</section>
-<section id="moves" aria-labelledby="transfers-title">
-<h2 id="transfers-title" tabindex="-1">Registrar transferencias</h2>
-<p class="muted">Después de mover el dinero en tu banco, pulsa <strong>Marcar completada</strong>. Puedes revisar o corregir el estado en el historial.</p>
-<h3>Transferencia manual</h3>
-<p class="muted">Registra aquí dinero que ya moviste entre tus cuentas. Si el movimiento ya aparece como sugerido, márcalo como completado en la lista de abajo.</p>
-<form id="manual-transfer">
-<label>Fecha <input id="manual-day" type="date" required></label>
-<label>Desde <select id="manual-source" required></select></label>
-<label>Hacia <select id="manual-destination" required></select></label>
-<label>Importe ($) <input id="manual-amount" type="text" inputmode="decimal" placeholder="100.00" required></label>
-<label>Concepto (opcional) <input id="manual-note" type="text" maxlength="120"></label>
-<button id="save-manual-transfer" type="submit">Registrar transferencia</button>
-</form>
-<h3>Transferencias sugeridas</h3>
-<div id="transfers"></div>
-<h3>Transferencias manuales registradas</h3>
-<div id="manual-history"></div>
-</section>
+<section class="workspace-group" aria-labelledby="operations-title">
+<h2 id="operations-title">Cuentas y movimientos</h2>
+<div class="workspace-grid">
 <section id="account-balances" aria-labelledby="balances-title">
-<h2 id="balances-title">Saldos por bucket</h2>
-<h3 id="bank-accounts-title">Añadir cuenta bancaria</h3>
+<h3 id="balances-title">Saldos por bucket</h3>
+<h4 id="bank-accounts-title">Añadir cuenta bancaria</h4>
 <p id="bank-accounts-help" class="muted">Las cuentas que añadas aquí aparecen en los saldos y quedan disponibles para ingresos, gastos, transferencias, reportes y Finanzas de pareja.</p>
 <form id="bank-account-form" aria-labelledby="bank-accounts-title" aria-describedby="bank-accounts-help">
   <label>Nombre de la cuenta <input id="bank-account-name" maxlength="60" required></label>
@@ -419,8 +383,56 @@ body.cloud-locked .quick-links { display:none; }
 <form id="opening-form" style="display:block"></form>
 </details>
 </section>
+<div class="entry-grid">
+<section id="income" aria-labelledby="entry-title">
+<h3 id="entry-title">Registrar ingreso</h3>
+<p id="plan" class="note"></p>
+<p><a id="income-plan-settings" href="#settings">Configurar el reparto de ingresos</a></p>
+<form id="entry">
+<label>Fecha <input id="day" type="date" required></label>
+<label>Ingreso ($) <input id="amount" inputmode="decimal" type="text" placeholder="250.00" required></label>
+<label>Cuenta que recibió el ingreso <select id="source"></select></label>
+<button id="save-entry">Registrar y repartir</button>
+</form>
+<div id="preview" class="spaced" aria-live="polite"></div>
+</section>
+<section id="spending" aria-labelledby="expense-title">
+<h3 id="expense-title">Registrar gasto</h3>
+<form id="expense">
+<label>Fecha <input id="expense-day" type="date" required></label>
+<label>Importe ($) <input id="expense-amount" type="text" inputmode="decimal" placeholder="23.00" required></label>
+<label>Cuenta de donde salió <select id="expense-account" required></select></label>
+<label>Concepto <input id="expense-note" type="text" maxlength="120" placeholder="Almuerzo" required></label>
+<label>Categoría del gasto <select id="expense-category"></select></label>
+<button id="save-expense">Registrar gasto</button>
+</form>
+</section>
+</div>
+<section id="moves" aria-labelledby="transfers-title">
+<h3 id="transfers-title" tabindex="-1">Registrar transferencias</h3>
+<p class="muted">Después de mover el dinero en tu banco, pulsa <strong>Marcar completada</strong>. Puedes revisar o corregir el estado en el historial.</p>
+<h4>Transferencia manual</h4>
+<p class="muted">Registra aquí dinero que ya moviste entre tus cuentas. Si el movimiento ya aparece como sugerido, márcalo como completado en la lista de abajo.</p>
+<form id="manual-transfer">
+<label>Fecha <input id="manual-day" type="date" required></label>
+<label>Desde <select id="manual-source" required></select></label>
+<label>Hacia <select id="manual-destination" required></select></label>
+<label>Importe ($) <input id="manual-amount" type="text" inputmode="decimal" placeholder="100.00" required></label>
+<label>Concepto (opcional) <input id="manual-note" type="text" maxlength="120"></label>
+<button id="save-manual-transfer" type="submit">Registrar transferencia</button>
+</form>
+<h4>Transferencias sugeridas</h4>
+<div id="transfers"></div>
+<h4>Transferencias manuales registradas</h4>
+<div id="manual-history"></div>
+</section>
+</div>
+</section>
+<section class="workspace-group" aria-labelledby="special-accounts-title">
+<h2 id="special-accounts-title">Tarjetas y pareja</h2>
+<div class="workspace-grid">
 <section id="credit-cards" aria-labelledby="cards-title">
-<h2 id="cards-title">Tarjetas de crédito</h2>
+<h3 id="cards-title">Tarjetas de crédito</h3>
 <p class="muted">Registra el saldo que ya debes y añade solo los movimientos que aún no estén incluidos en ese saldo. Los pagos se registran por separado de los gastos bancarios.</p>
 <p id="card-summary" aria-live="polite"></p>
 <div id="card-balances"></div>
@@ -441,7 +453,7 @@ body.cloud-locked .quick-links { display:none; }
 </form>
 </details>
 <div id="card-activity" hidden>
-<h3>Registrar movimiento</h3>
+<h4>Registrar movimiento</h4>
 <form id="card-movement-form" autocomplete="off">
 <label>Tarjeta <select name="card" required></select></label>
 <label>Fecha <input name="day" type="date" required></label>
@@ -450,15 +462,15 @@ body.cloud-locked .quick-links { display:none; }
 <label>Concepto (opcional) <input name="note" maxlength="120"></label>
 <button type="submit">Registrar movimiento</button>
 </form>
-<h3>Historial de la tarjeta seleccionada</h3>
+<h4>Historial de la tarjeta seleccionada</h4>
 <div id="card-history"></div>
 </div>
 </section>
 <section id="couple-finances" aria-labelledby="couple-title">
-<h2 id="couple-title">Finanzas de pareja</h2>
+<h3 id="couple-title">Finanzas de pareja</h3>
 <p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
 <div id="couple-balances"></div>
-<h3>Apartado de ahorros de él</h3>
+<h4>Apartado de ahorros de él</h4>
 <p><a href="#bank-accounts-title">Gestionar cuentas en Saldos por bucket</a></p>
 <form id="couple-savings-form">
   <label>Cuenta del apartado <select id="couple-savings-account" required></select></label>
@@ -469,7 +481,7 @@ body.cloud-locked .quick-links { display:none; }
 <div id="couple-savings-balances"></div>
 <label>Mes del presupuesto <input id="couple-month" type="month"></label>
 <div id="couple-budget"></div>
-<h3>Registrar movimiento</h3>
+<h4>Registrar movimiento</h4>
 <form id="couple-form">
   <label>Fecha <input id="couple-day" type="date" required></label>
   <label>Tipo <select id="couple-kind">
@@ -489,29 +501,34 @@ body.cloud-locked .quick-links { display:none; }
   <button type="submit" id="couple-save">Registrar movimiento</button>
 </form>
 <p id="couple-status" class="muted" role="status"></p>
-<h3>Historial de movimientos</h3>
+<h4>Historial de movimientos</h4>
 <p class="muted">Los saldos siguen el orden de registro. Una anulación corrige el mes del movimiento original y queda en el historial.</p>
 <div id="couple-history"></div>
 </section>
+</div>
+</section>
+<section class="workspace-group" aria-labelledby="tracking-title">
+<h2 id="tracking-title">Historial, análisis y reportes</h2>
+<div class="workspace-grid">
 <section id="history-section" aria-labelledby="history-title">
-<h2 id="history-title">Historial de ingresos y transferencias</h2>
+<h3 id="history-title">Historial de ingresos y transferencias</h3>
 <p class="muted">Abre un día para revisar el reparto. Actualiza el estado aquí después de mover el dinero en tu banco.</p>
 <div class="entries" id="history"></div>
 </section>
 <section aria-labelledby="daily-title">
-<h2 id="daily-title">Resumen diario y gastos</h2>
+<h3 id="daily-title">Resumen diario y gastos</h3>
 <p class="muted">El neto es el ingreso menos los gastos del día. Las transferencias quedan en su propio historial.</p>
 <div id="daily"></div>
-<h3>Detalle de gastos</h3>
+<h4>Detalle de gastos</h4>
 <div id="expenses"></div>
 </section>
 <section id="financial-analysis" aria-labelledby="projection-title">
-<h2 id="projection-title">Análisis financiero y proyección</h2>
+<h3 id="projection-title">Análisis financiero y proyección</h3>
 <p class="muted">Se actualiza con tus ingresos, gastos y transferencias registrados. Úsalo para ver qué está consumiendo el saldo de cada cuenta y cómo podría cerrar el año si mantienes el mismo ritmo.</p>
 <div id="projection-result"></div>
 </section>
 <section aria-labelledby="report-title">
-<h2 id="report-title">Reporte para tu contable</h2>
+<h3 id="report-title">Reporte para tu contable</h3>
 <p class="muted">Descarga un CSV para abrir en Excel. Las transferencias completadas aparecen una vez, con su origen y destino.</p>
 <form id="report-form">
 <label>Desde <input id="report-start" type="date" required></label>
@@ -529,17 +546,22 @@ body.cloud-locked .quick-links { display:none; }
 </form>
 <p class="muted spaced">El reporte usa el día en que marcaste la transferencia como completada. Las transferencias antiguas sin esa fecha usan la del ingreso asociado y aparecen identificadas.</p>
 </section>
+</div>
+</section>
+<section class="workspace-group" aria-labelledby="preferences-title">
+<h2 id="preferences-title">Configuración y respaldo</h2>
+<div class="workspace-grid">
 <details id="settings">
-<summary><h2>Configurar categorías y reparto</h2></summary>
+<summary><h3>Configurar categorías y reparto</h3></summary>
 <p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Cada columna de porcentajes debe sumar 100 %. En la columna desde el 28 de noviembre, puedes dejar en blanco las cuentas que recibirán 0 %. Si dejas toda esa columna en blanco, se seguirá usando el reparto anterior.</p>
 <div id="configuration"></div>
-<h3>Letra del título y los encabezados</h3>
+<h4>Letra del título y los encabezados</h4>
 <p class="muted">Selecciona Shooting Star.ttf en este dispositivo. La letra se guarda solo en este navegador.</p>
 <label>Archivo de fuente <input id="sticker-font-file" type="file" accept=".ttf,.otf,font/ttf,font/otf"></label>
 <p id="sticker-font-status" class="muted" aria-live="polite"></p>
 </details>
 <details id="backup-section">
-<summary><h2>Respaldo y recuperación</h2></summary>
+<summary><h3>Respaldo y recuperación</h3></summary>
 <p class="muted">Tus datos se sincronizan con tu cuenta de Supabase cuando aparece «Guardado en la nube». Exporta un respaldo adicional. Importar reemplaza los datos de esta cuenta; espera la confirmación de sincronización.</p>
 <div id="cloud-logged" hidden>
   <p id="cloud-user" class="muted"></p>
@@ -551,6 +573,8 @@ body.cloud-locked .quick-links { display:none; }
 </div>
 <div class="actions"><button id="export" type="button">Exportar respaldo JSON</button><label>Archivo de respaldo <input id="backup" type="file" accept=".json,application/json"></label></div>
 </details>
+</div>
+</section>
 <p id="status" class="note" role="status" aria-live="polite"></p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1015,7 +1039,7 @@ function renderPreview() {
   }
   const source = el('source').value === '' ? -1 : Number(el('source').value);
   const parts = allocate(amount,rates);
-  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+  el('preview').innerHTML = '<h4>Vista previa del reparto</h4>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
@@ -1127,7 +1151,7 @@ function analyzeFinances(data,today) {
   return {start,yearEnd,observedDays,accounts,categoryTotals};
 }
 function categoryChart(totals,totalExpense) {
-  const heading = '<h3>Gastos por categoría</h3>';
+  const heading = '<h4>Gastos por categoría</h4>';
   if (!totalExpense) return heading+'<p class="muted">Cuando registres gastos en este período, aparecerán aquí.</p>';
   const bars = [...totals].sort((a,b) => b[1]-a[1]).map(([name,amount]) => {
     const share = (amount*100/totalExpense).toFixed(1);
@@ -1175,7 +1199,7 @@ function renderProjection() {
   }
   const concepts = analysis.accounts.flatMap((item,index) => [...item.concepts.values()].map(concept => ({...concept,index})))
     .sort((a,b) => b.amount-a.amount).slice(0,5);
-  const spending = concepts.length ? '<h3>Gastos más altos del período</h3>'
+  const spending = concepts.length ? '<h4>Gastos más altos del período</h4>'
     +table(['Concepto','Cuenta','Total'],concepts.map(item => row([safe(item.label),bucketLabel(item.index),cash(item.amount)]))) : '';
   const note = analysis.accounts[0].end === null
     ? 'El estimado aparece cuando el historial abarca al menos 7 días.'
@@ -1185,7 +1209,7 @@ function renderProjection() {
     +table(['Cuenta','Saldo actual','Ingresos','Gastos','Transferencias netas','Cambio del período','Estimado al 31 dic.'],
       rows.concat(row(['<strong>Total</strong>',cash(total('balance')),cash(total('income')),cash(total('cost')),cash(0),cash(total('net')),projectedTotal])))
     +'<p class="muted spaced">'+note+' Las transferencias completadas mueven saldo entre cuentas y se cancelan en el total.</p>'
-    +(alerts.length ? '<h3>Qué revisar</h3><ul>'+alerts.join('')+'</ul>' : '')+categoryChart(analysis.categoryTotals,total('cost'))+spending;
+    +(alerts.length ? '<h4>Qué revisar</h4><ul>'+alerts.join('')+'</ul>' : '')+categoryChart(analysis.categoryTotals,total('cost'))+spending;
 }
 function reportRows(data,start,end,account,type) {
   const rows = [];
@@ -1692,7 +1716,9 @@ el('opening-form').addEventListener('submit',event => {
 });
 el('amount').addEventListener('input',renderPreview);
 el('day').addEventListener('input',renderPreview);
-el('income-plan-settings').addEventListener('click',() => { el('settings').open = true; });
+for (const link of document.querySelectorAll('a[href="#settings"]')) {
+  link.addEventListener('click',() => { el('settings').open = true; });
+}
 el('source').addEventListener('change',renderPreview);
 el('entry').addEventListener('submit',event => {
   event.preventDefault();
