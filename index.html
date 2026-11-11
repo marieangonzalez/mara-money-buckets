@@ -363,6 +363,7 @@ body.cloud-locked .quick-links { display:none; }
 <section id="income" aria-labelledby="entry-title">
 <h2 id="entry-title">Registrar ingreso</h2>
 <p id="plan" class="note"></p>
+<p><a id="income-plan-settings" href="#settings">Configurar el reparto de ingresos</a></p>
 <form id="entry">
 <label>Fecha <input id="day" type="date" required></label>
 <label>Ingreso ($) <input id="amount" inputmode="decimal" type="text" placeholder="250.00" required></label>
@@ -530,7 +531,7 @@ body.cloud-locked .quick-links { display:none; }
 </section>
 <details id="settings">
 <summary><h2>Configurar categorías y reparto</h2></summary>
-<p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Escribe directamente los porcentajes que quieras usar. Deben sumar 100%. El cambio se aplica a los ingresos nuevos.</p>
+<p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Cada columna de porcentajes debe sumar 100 %. En la columna desde el 28 de noviembre, puedes dejar en blanco las cuentas que recibirán 0 %. Si dejas toda esa columna en blanco, se seguirá usando el reparto anterior.</p>
 <div id="configuration"></div>
 <h3>Letra del título y los encabezados</h3>
 <p class="muted">Selecciona Shooting Star.ttf en este dispositivo. La letra se guarda solo en este navegador.</p>
@@ -562,12 +563,13 @@ const expenseCategories = [
   'Viajes','Deudas y quiebra','Contribuciones','Otros'
 ];
 const validExpenseCategory = value => value === '' || expenseCategories.includes(value);
+const nextPlanStart = '2026-11-28';
 const travelPlanRates = [1400,3730,0,4445,425,0];
 const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, accounts:[...baseAccounts], provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:baseAccounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:baseAccounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
+const initial = () => ({version:1, accounts:[...baseAccounts], provisional:true, nextRates:null, rates:[1700,1700,1700,1700,1600,1600], purposes:baseAccounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:baseAccounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
@@ -752,7 +754,7 @@ function extendAccounts(data,added) {
   const zeros = added.map(() => 0);
   return {
     ...data,accounts:[...data.accounts,...added],
-    rates:[...data.rates,...zeros],purposes:[...data.purposes,...added.map(() => '')],
+    rates:[...data.rates,...zeros],nextRates:data.nextRates ? [...data.nextRates,...zeros] : null,purposes:[...data.purposes,...added.map(() => '')],
     opening:[...data.opening,...zeros],
     entries:data.entries.map(entry => ({
       ...entry,rates:[...entry.rates,...zeros],parts:[...entry.parts,...zeros],
@@ -768,6 +770,10 @@ function validate(data) {
       || !vector(data.purposes,accounts.length,x => typeof x === 'string' && x.length <= 120)
       || !vector(data.buckets,legacyBucketCount,x => boundedInt(x,-1,accounts.length-1))
       || !Array.isArray(data.entries) || data.entries.length > maxEntries) throw Error('El formato del respaldo no es válido.');
+  const nextRates = Object.hasOwn(data,'nextRates') ? data.nextRates : null;
+  if (nextRates !== null && !validRates(nextRates,accounts.length)) {
+    throw Error('El reparto desde el 28 de noviembre debe sumar 100 %.');
+  }
   const days = new Set();
   const entries = data.entries.map(entry => {
     if (!entry || !validDay(entry.day) || days.has(entry.day) || !boundedInt(entry.amount,1,maxIncome)
@@ -810,7 +816,7 @@ function validate(data) {
     }
     return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
-  return {version:1,accounts,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
+  return {version:1,accounts,provisional:data.provisional,nextRates,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
     creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
     coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [],accounts.length),
     coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null,accounts.length)};
@@ -991,15 +997,25 @@ function save(next,recover=false) {
     return false;
   }
 }
+function incomeRates(day) {
+  return day >= nextPlanStart && state.nextRates ? state.nextRates : state.rates;
+}
+
 function renderPreview() {
+  const day = el('day').value;
+  const rates = incomeRates(day);
+  const hasNextPlan = day >= nextPlanStart && state.nextRates !== null;
+  el('plan').textContent = hasNextPlan ? 'Reparto del 28 de noviembre de 2026 en adelante.'
+    : day >= nextPlanStart ? 'Se usa el reparto anterior hasta que guardes los porcentajes para el 28 de noviembre en adelante.'
+    : 'Reparto hasta el 27 de noviembre de 2026.';
   const amount = units(el('amount').value);
   if (!boundedInt(amount,1,maxIncome)) {
     el('preview').textContent = '';
     return;
   }
   const source = el('source').value === '' ? -1 : Number(el('source').value);
-  const parts = allocate(amount,state.rates);
-  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(state.rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+  const parts = allocate(amount,rates);
+  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
@@ -1383,7 +1399,6 @@ function renderAccountOptions() {
 function render(openDay) {
   renderAccountOptions();
   el('bank-account-add').disabled = !ready;
-  el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
   el('save-entry').disabled = !ready;
   el('save-expense').disabled = !ready;
   el('save-manual-transfer').disabled = !ready;
@@ -1403,10 +1418,12 @@ function render(openDay) {
 }
 function renderSettings() {
   const accountRows = state.accounts.map((name,index) => row([safe(name),
-    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje de '+safe(name)+'" value="'+(state.rates[index]/100)+'">',
+    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje hasta el 27 de noviembre para '+safe(name)+'" value="'+(state.rates[index]/100)+'">',
+    '<input class="next-rate" type="text" inputmode="decimal" size="6" aria-label="Porcentaje desde el 28 de noviembre para '+safe(name)+'" value="'+(state.nextRates ? state.nextRates[index]/100 : '')+'">',
     '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+safe(name)+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
-  el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Porcentaje (%)','Categoría del bucket'],accountRows)
+  el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Hasta el 27 nov 2026 (%)','Desde el 28 nov 2026 (%)','Categoría del bucket'],accountRows)
     +'<p id="rate-total" class="spaced" aria-live="polite"></p>'
+    +'<p id="next-rate-total" aria-live="polite"></p>'
     +'<p class="note">Plan temporal para Premium Travel Club · meta de $1,529 antes del 27 de noviembre de 2026. Usa los porcentajes hasta completar la meta y ajusta el último importe a lo que falte.</p>'
     +'<div class="actions spaced"><button id="load-travel-plan" type="button" class="secondary">Cargar plan temporal de viajes</button><button id="save-settings">Guardar configuración</button></div></form>';
   el('save-settings').disabled = !ready;
@@ -1414,10 +1431,19 @@ function renderSettings() {
 }
 const fields = selector => Array.from(el('configuration').querySelectorAll(selector));
 const readRates = () => fields('.rate').map(input => units(input.value));
+function readNextRates() {
+  const values = fields('.next-rate').map(input => input.value.trim());
+  return values.some(Boolean) ? values.map(value => value ? units(value) : 0) : null;
+}
 function updateTotal() {
   const rates = readRates();
-  el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total ingresado · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
+  el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total hasta el 27 nov · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
   el('rate-total').classList.toggle('error',!validRates(rates,state.accounts.length));
+  const next = readNextRates();
+  const total = el('next-rate-total');
+  total.textContent = next === null ? 'Reparto desde el 28 nov pendiente de configurar.'
+    : next.every(Number.isFinite) ? 'Total desde el 28 nov · '+pct(sum(next)) : 'Escribe porcentajes con hasta dos decimales.';
+  total.classList.toggle('error',next !== null && !validRates(next,state.accounts.length));
 }
 
 function localDay() {
@@ -1665,6 +1691,8 @@ el('opening-form').addEventListener('submit',event => {
   }
 });
 el('amount').addEventListener('input',renderPreview);
+el('day').addEventListener('input',renderPreview);
+el('income-plan-settings').addEventListener('click',() => { el('settings').open = true; });
 el('source').addEventListener('change',renderPreview);
 el('entry').addEventListener('submit',event => {
   event.preventDefault();
@@ -1683,7 +1711,8 @@ el('entry').addEventListener('submit',event => {
     say('Se alcanzó el límite de registros de esta copia.',true);
     return;
   }
-  const entry = {day,amount,source,rates:[...state.rates],parts:allocate(amount,state.rates),done:state.accounts.map(() => false)};
+  const rates = [...incomeRates(day)];
+  const entry = {day,amount,source,rates,parts:allocate(amount,rates),done:state.accounts.map(() => false)};
   if (save({...state,entries:[...state.entries,entry]})) {
     el('amount').value = '';
     render(day);
@@ -1745,13 +1774,13 @@ el('manual-transfer').addEventListener('submit',event => {
 el('history').addEventListener('click',updateTransfer);
 el('transfers').addEventListener('click',updateTransfer);
 el('configuration').addEventListener('input',event => {
-  if (event.target.matches('.rate')) updateTotal();
+  if (event.target.matches('.rate,.next-rate')) updateTotal();
 });
 el('configuration').addEventListener('click',event => {
   if (event.target.id !== 'load-travel-plan') return;
   fields('.rate').forEach((input,index) => { input.value = String((travelPlanRates[index] ?? 0)/100); });
   updateTotal();
-  say('Plan temporal cargado. Pulsa Guardar configuración para aplicarlo a los próximos ingresos.');
+  say('Plan temporal cargado en la columna hasta el 27 de noviembre. Pulsa Guardar configuración para aplicarlo.');
 });
 el('configuration').addEventListener('submit',event => {
   event.preventDefault();
@@ -1760,9 +1789,14 @@ el('configuration').addEventListener('submit',event => {
     say('Cada porcentaje debe estar entre 0 y 100, y el total debe ser exactamente 100 %. ',true);
     return;
   }
+  const nextRates = readNextRates();
+  if (nextRates !== null && !validRates(nextRates,state.accounts.length)) {
+    say('El reparto desde el 28 de noviembre debe sumar exactamente 100 %.',true);
+    return;
+  }
   const purposes = fields('.purpose').map(input => input.value.trim());
   const provisional = state.provisional && rates.every((rate,index) => rate === state.rates[index]);
-  if (save({...state,rates,purposes,provisional})) {
+  if (save({...state,rates,nextRates,purposes,provisional})) {
     render();
     say('Categorías y reparto guardados.');
   }
