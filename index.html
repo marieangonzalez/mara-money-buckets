@@ -410,6 +410,7 @@ body.cloud-locked .quick-links { display:none; }
   <button type="submit" id="bank-account-add">Añadir cuenta</button>
 </form>
 <p id="bank-account-status" class="muted" role="status"></p>
+<p id="bank-account-sync" class="muted" role="status" hidden></p>
 <details class="spaced">
 <summary>Saldos iniciales</summary>
 <p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
@@ -456,7 +457,15 @@ body.cloud-locked .quick-links { display:none; }
 <p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
 <div id="couple-balances"></div>
 <h3>Apartado de ahorros de él</h3>
-<p><a href="#bank-accounts-title">Añadir una cuenta bancaria</a></p>
+<details id="couple-bank-account-details" class="spaced">
+  <summary>Añadir una cuenta bancaria</summary>
+  <form id="couple-bank-account-form" class="spaced">
+    <label>Nombre de la cuenta <input id="couple-bank-account-name" maxlength="60" required></label>
+    <button type="submit" id="couple-bank-account-add">Añadir cuenta</button>
+  </form>
+  <p id="couple-bank-account-status" class="muted" role="status"></p>
+  <p id="couple-bank-account-sync" class="muted" role="status" hidden></p>
+</details>
 <form id="couple-savings-form">
   <label>Cuenta del apartado <select id="couple-savings-account" required></select></label>
   <label>Nombre del apartado <input id="couple-savings-label" maxlength="60" required placeholder="Escribe su nombre"></label>
@@ -847,6 +856,7 @@ let cloudFailed = false;
 let cloudEpoch = 0;
 let cloudRowExists = false;
 let cloudRevision = null;
+let bankAccountSync = null;
 const cloudUrl = 'https://qkasvabnygwlfqagafqd.supabase.co';
 const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
 // Original browser data is read but never automatically uploaded or overwritten.
@@ -855,9 +865,16 @@ function cloudMessage(message,error=false) {
   const status = el(ready ? 'cloud-sync-state' : 'cloud-state');
   status.textContent = message;
   status.classList.toggle('error',error);
+  if (ready && bankAccountSync) {
+    bankAccountSync.hidden = false;
+    bankAccountSync.textContent = message;
+    bankAccountSync.classList.toggle('error',error);
+  }
 }
 function cloudLock() {
   ready = false;
+  if (bankAccountSync) bankAccountSync.hidden = true;
+  bankAccountSync = null;
   document.body.classList.add('cloud-locked');
   el('cloud-access').hidden = false;
   el('backup-section').open = false;
@@ -871,6 +888,9 @@ function cloudLock() {
   el('couple-savings-form').reset();
   el('bank-account-form').reset();
   el('bank-account-status').textContent = '';
+  el('couple-bank-account-form').reset();
+  el('couple-bank-account-details').open = false;
+  el('couple-bank-account-status').textContent = '';
   el('couple-day').value = localDay();
   el('couple-month').value = '';
   el('couple-status').textContent = '';
@@ -1373,6 +1393,7 @@ function renderAccountOptions() {
 function render(openDay) {
   renderAccountOptions();
   el('bank-account-add').disabled = !ready;
+  el('couple-bank-account-add').disabled = !ready;
   el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
   el('save-entry').disabled = !ready;
   el('save-expense').disabled = !ready;
@@ -1547,29 +1568,50 @@ el('card-history').addEventListener('click',event => {
   saveCards(creditCards,'Movimiento de tarjeta eliminado.');
 });
 
-el('bank-account-form').addEventListener('submit',event => {
-  event.preventDefault();
-  const field = el('bank-account-name');
-  const status = el('bank-account-status');
-  const name = field.value.trim();
-  if (!name || name.length > 60) {
-    status.textContent = 'Escribe un nombre de hasta 60 caracteres.';
-    return;
-  }
-  if (state.accounts.some(account => accountKey(account) === accountKey(name))) {
-    status.textContent = 'Ya existe una cuenta con ese nombre.';
-    return;
-  }
-  if (!save(extendAccounts(state,[name]))) {
-    status.textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
-    return;
-  }
-  field.value = '';
-  renderSettings();
-  renderOpening();
-  render();
-  status.textContent = 'Cuenta añadida con saldo inicial de $0 y 0 % del reparto.';
-});
+function selectNewCoupleAccount(index) {
+  el('couple-savings-account').value = String(index);
+}
+
+for (const id of ['bank-account','couple-bank-account']) {
+  el(id+'-form').addEventListener('submit',event => {
+    event.preventDefault();
+    const field = el(id+'-name');
+    const status = el(id+'-status');
+    const inCouple = id === 'couple-bank-account';
+    const name = field.value.trim();
+    const key = accountKey(name);
+    if (!name || name.length > 60) {
+      status.textContent = 'Escribe un nombre de hasta 60 caracteres.';
+      return;
+    }
+    const existing = state.accounts.findIndex(account => accountKey(account) === key);
+    if (existing !== -1) {
+      if (inCouple) selectNewCoupleAccount(existing);
+      status.textContent = inCouple
+        ? 'Esa cuenta ya existe. La seleccioné abajo. Escribe el nombre del apartado y pulsa «Guardar apartado».'
+        : 'Ya existe una cuenta con ese nombre.';
+      return;
+    }
+    if (bankAccountSync) bankAccountSync.hidden = true;
+    bankAccountSync = el(id+'-sync');
+    if (!save(extendAccounts(state,[name]))) {
+      status.textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
+      return;
+    }
+    const savingsLabel = el('couple-savings-label').value;
+    field.value = '';
+    renderSettings();
+    renderOpening();
+    render();
+    if (inCouple) {
+      selectNewCoupleAccount(state.accounts.length-1);
+      el('couple-savings-label').value = savingsLabel;
+    }
+    status.textContent = inCouple
+      ? 'Añadiste «'+name+'» y quedó seleccionada abajo. Completa el nombre y pulsa «Guardar apartado».'
+      : 'Añadiste «'+name+'» con saldo inicial de $0 y 0 % del reparto.';
+  });
+}
 
 el('day').value = localDay();
 el('report-start').value = localDay().slice(0,4)+'-01-01';
