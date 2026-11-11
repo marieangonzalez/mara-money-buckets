@@ -404,6 +404,12 @@ body.cloud-locked .quick-links { display:none; }
 <h2 id="balances-title">Saldos por bucket</h2>
 <p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
 <div id="balances"></div>
+<h3 id="bank-accounts-title">Añadir cuenta bancaria</h3>
+<form id="bank-account-form" aria-labelledby="bank-accounts-title">
+  <label>Nombre de la cuenta <input id="bank-account-name" maxlength="60" required></label>
+  <button type="submit" id="bank-account-add">Añadir cuenta</button>
+</form>
+<p id="bank-account-status" class="muted" role="status"></p>
 <details class="spaced">
 <summary>Saldos iniciales</summary>
 <p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
@@ -450,6 +456,7 @@ body.cloud-locked .quick-links { display:none; }
 <p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
 <div id="couple-balances"></div>
 <h3>Apartado de ahorros de él</h3>
+<p><a href="#bank-accounts-title">Añadir una cuenta bancaria</a></p>
 <form id="couple-savings-form">
   <label>Cuenta del apartado <select id="couple-savings-account" required></select></label>
   <label>Nombre del apartado <input id="couple-savings-label" maxlength="60" required placeholder="Escribe su nombre"></label>
@@ -546,7 +553,7 @@ body.cloud-locked .quick-links { display:none; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 'use strict';
-const accounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
+const baseAccounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
 const expenseCategories = [
   'Comida y supermercado','Transporte','Vivienda y servicios','Salud',
   'Compras personales','Suscripciones y entretenimiento','Negocio y materiales',
@@ -558,11 +565,11 @@ const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
+const initial = () => ({version:1, accounts:[...baseAccounts], provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:baseAccounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:baseAccounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
-const validRates = rates => vector(rates,accounts.length,x => boundedInt(x,0,10000)) && sum(rates) === 10000;
+const validRates = (rates,count) => vector(rates,count,x => boundedInt(x,0,10000)) && sum(rates) === 10000;
 const validDay = value => {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + 'T00:00:00Z');
@@ -580,7 +587,7 @@ function allocate(amount,rates) {
   for (const index of byRemainder.slice(0,remaining)) parts[index]++;
   return parts;
 }
-function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTransfers=[]) {
+function balancesFor(entries,expenses=[],opening=baseAccounts.map(() => 0),manualTransfers=[]) {
   const posted = [...opening];
   const expected = [...opening];
   for (const entry of entries) {
@@ -653,9 +660,9 @@ function coupleEffect(entry) {
 }
 
 const coupleFundMovement = kind => kind === 'deposit' || kind === 'withdrawal';
-function validateCoupleSavings(value) {
+function validateCoupleSavings(value,count) {
   if (value === null) return null;
-  if (!value || !boundedInt(value.account,0,accounts.length-1) || typeof value.label !== 'string'
+  if (!value || !boundedInt(value.account,0,count-1) || typeof value.label !== 'string'
       || !value.label.trim() || value.label.length > 60) throw Error('Escoge una cuenta y escribe el nombre del apartado.');
   return {account:value.account,label:value.label.trim()};
 }
@@ -688,7 +695,7 @@ function coupleLedger(entries) {
   return {available,fund,history,reversed,locations};
 }
 
-function validateCouple(entries) {
+function validateCouple(entries,count) {
   if (!Array.isArray(entries) || entries.length > maxEntries) throw Error('El historial de pareja no es válido.');
   const checked = entries.map((entry,index) => {
     if (!entry || !coupleKinds.has(entry.kind) || !validDay(entry.day)
@@ -702,7 +709,7 @@ function validateCouple(entries) {
     if (reverses !== null && (kind !== entries[reverses].kind || amount !== entries[reverses].amount || day < entries[reverses].day)) {
       throw Error('La anulación debe corresponder al movimiento original y tener una fecha igual o posterior.');
     }
-    const savings = validateCoupleSavings(Object.hasOwn(entry,'savings') ? entry.savings : null);
+    const savings = validateCoupleSavings(Object.hasOwn(entry,'savings') ? entry.savings : null,count);
     if ((savings && !coupleFundMovement(kind)) || (reverses !== null &&
         (savings?.account !== entries[reverses].savings?.account || savings?.label !== entries[reverses].savings?.label))) {
       throw Error('El apartado del movimiento no es válido.');
@@ -728,15 +735,41 @@ function coupleBudget(entries,month,reversed) {
   };
 }
 
+const accountKey = name => name.trim().normalize('NFKC').toLowerCase();
+function validateAccounts(names) {
+  if (!Array.isArray(names) || !baseAccounts.every((name,index) => names[index] === name)
+      || names.some(name => typeof name !== 'string' || !name.trim() || name.length > 60)
+      || new Set(names.map(accountKey)).size !== names.length) {
+    throw Error('Los nombres de las cuentas deben ser válidos y únicos.');
+  }
+  return names.map(name => name.trim());
+}
+
+function extendAccounts(data,added) {
+  if (!added.length) return data;
+  const zeros = added.map(() => 0);
+  return {
+    ...data,accounts:[...data.accounts,...added],
+    rates:[...data.rates,...zeros],purposes:[...data.purposes,...added.map(() => '')],
+    opening:[...data.opening,...zeros],
+    entries:data.entries.map(entry => ({
+      ...entry,rates:[...entry.rates,...zeros],parts:[...entry.parts,...zeros],
+      done:[...entry.done,...added.map(() => false)],
+      ...(entry.completedOn ? {completedOn:[...entry.completedOn,...added.map(() => null)]} : {})
+    }))
+  };
+}
+
 function validate(data) {
-  if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates)
+  const accounts = validateAccounts(data && Object.hasOwn(data,'accounts') ? data.accounts : baseAccounts);
+  if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates,accounts.length)
       || !vector(data.purposes,accounts.length,x => typeof x === 'string' && x.length <= 120)
       || !vector(data.buckets,legacyBucketCount,x => boundedInt(x,-1,accounts.length-1))
       || !Array.isArray(data.entries) || data.entries.length > maxEntries) throw Error('El formato del respaldo no es válido.');
   const days = new Set();
   const entries = data.entries.map(entry => {
     if (!entry || !validDay(entry.day) || days.has(entry.day) || !boundedInt(entry.amount,1,maxIncome)
-        || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates)
+        || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates,accounts.length)
         || !vector(entry.parts,accounts.length,x => boundedInt(x,0,entry.amount))
         || !allocate(entry.amount,entry.rates).every((part,index) => part === entry.parts[index])
         || !vector(entry.done,accounts.length,(x,index) => typeof x === 'boolean' && (!x || (index !== entry.source && entry.parts[index] > 0)))) throw Error('El respaldo contiene un ingreso o una transferencia inválida.');
@@ -775,10 +808,10 @@ function validate(data) {
     }
     return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
-  return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
+  return {version:1,accounts,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
     creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
-    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : []),
-    coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null)};
+    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [],accounts.length),
+    coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null,accounts.length)};
 }
 
 const el = id => document.getElementById(id);
@@ -788,10 +821,10 @@ const pct = rate => (rate/100).toFixed(2).replace(/\.00$/,'') + ' %';
 const safe = value => String(value).replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const bucketLabel = index => {
   const category = state.purposes[index];
-  const name = accounts[index];
+  const name = safe(state.accounts[index]);
   return category ? '<strong>'+safe(category)+'</strong><br><small class="muted">'+name+'</small>' : name;
 };
-const options = () => accounts.map((name,i) => '<option value="'+i+'">'+name+'</option>').join('');
+const options = () => state.accounts.map((name,i) => '<option value="'+i+'">'+safe(name)+'</option>').join('');
 const expenseOptions = (selected='') => ['',...expenseCategories].map(category =>
   '<option value="'+safe(category)+'"'+(category === selected ? ' selected' : '')+'>'+(category || 'Sin categoría')+'</option>').join('');
 const table = (columns,rows) => '<div class="table"><table><thead><tr>'+columns.map(x => '<th scope="col">'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
@@ -836,6 +869,8 @@ function cloudLock() {
   resetCardForms();
   el('couple-form').reset();
   el('couple-savings-form').reset();
+  el('bank-account-form').reset();
+  el('bank-account-status').textContent = '';
   el('couple-day').value = localDay();
   el('couple-month').value = '';
   el('couple-status').textContent = '';
@@ -954,13 +989,13 @@ function renderPreview() {
   }
   const source = el('source').value === '' ? -1 : Number(el('source').value);
   const parts = allocate(amount,state.rates);
-  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],accounts.map((_,index) => row([bucketLabel(index),pct(state.rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(state.rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
 function transferButton(entry,index) {
   const label = entry.done[index] ? 'Volver a pendiente' : 'Marcar completada';
-  return '<button type="button" class="secondary" data-day="'+entry.day+'" data-index="'+index+'" aria-label="'+label+' · '+accounts[index]+'">'+label+'</button>';
+  return '<button type="button" class="secondary" data-day="'+entry.day+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button>';
 }
 function renderTransfers() {
   const rows = [...state.entries].sort((a,b) => a.day.localeCompare(b.day)).flatMap(entry =>
@@ -979,14 +1014,14 @@ function renderManualTransfers() {
 function renderHistory(openDay) {
   el('history').innerHTML = state.entries.length ? [...state.entries].sort((a,b) => b.day.localeCompare(a.day)).map(entry => {
     const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index]).length;
-    const rows = accounts.map((name,index) => {
+    const rows = state.accounts.map((_,index) => {
       const part = entry.parts[index];
       const move = index !== entry.source && part > 0;
       const status = index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
       const action = move ? transferButton(entry,index) : '';
       return row([bucketLabel(index),pct(entry.rates[index]),cash(part),stateChip(status,move ? (entry.done[index] ? 'done' : 'pending') : 'neutral'),action]);
     });
-    return '<details '+(entry.day === openDay ? 'open' : '')+'><summary>'+entry.day+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+accounts[entry.source]+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
+    return '<details '+(entry.day === openDay ? 'open' : '')+'><summary>'+entry.day+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
   }).join('') : '<p class="muted">Todavía no hay ingresos registrados.</p>';
 }
 function renderExpenses() {
@@ -1007,8 +1042,8 @@ function renderExpenses() {
   el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
 }
 function renderOpening() {
-  const rows = accounts.map((name,index) => row([name,
-    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+name+'" value="'+(state.opening[index]/100).toFixed(2)+'">']));
+  const rows = state.accounts.map((name,index) => row([safe(name),
+    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+safe(name)+'" value="'+(state.opening[index]/100).toFixed(2)+'">']));
   el('opening-form').innerHTML = table(['Cuenta','Saldo inicial ($)'],rows)
     +'<button class="secondary spaced" id="save-opening" type="submit">Guardar saldos iniciales</button>';
   el('save-opening').disabled = !ready;
@@ -1093,13 +1128,13 @@ function renderProjection() {
   const negative = analysis.accounts.filter(item => item.end !== null && item.end < 0);
   if (negative.length) {
     const list = analysis.accounts.map((item,index) => item.end !== null && item.end < 0
-      ? accounts[index]+' ('+money(item.end)+')' : '').filter(Boolean);
+      ? safe(state.accounts[index])+' ('+money(item.end)+')' : '').filter(Boolean);
     alerts.push('<li><strong>Saldo estimado bajo cero:</strong> '+list.join(', ')+'. Revisa los gastos de esas cuentas o si necesitan recibir más del reparto.</li>');
   }
   const declining = analysis.accounts.map((item,index) => ({...item,index}))
     .filter(item => item.net < 0).sort((a,b) => a.net-b.net).slice(0,3);
   if (declining.length) {
-    const list = declining.map(item => accounts[item.index]+' ('+money(item.net)+')');
+    const list = declining.map(item => safe(state.accounts[item.index])+' ('+money(item.net)+')');
     alerts.push('<li><strong>Cuentas que consumieron saldo:</strong> '+list.join(', ')+'. Compara Gastos y Transferencias netas para identificar qué causó la caída.</li>');
   }
   const overspending = total('cost') > total('income');
@@ -1156,7 +1191,7 @@ function reportCsv(rows) {
     const escaped = /^\s*[=+@-]|^[\t\r\n]/.test(text) ? "'"+text : text;
     return '"'+escaped.replace(/"/g,'""')+'"';
   };
-  const name = index => index === null ? '' : accounts[index];
+  const name = index => index === null ? '' : state.accounts[index];
   const category = index => index === null ? '' : state.purposes[index];
   const header = ['Fecha','Tipo','Cuenta origen','Categoría origen','Cuenta destino','Categoría destino','Concepto','Importe USD','Referencia de fecha'];
   const lines = rows.map(item => [item.day,item.kind,name(item.source),category(item.source),
@@ -1165,7 +1200,7 @@ function reportCsv(rows) {
 }
 function coupleLocationName(account,label) {
   if (account === null) return 'Sin apartado asignado';
-  return label ? accounts[account]+' · '+label : accounts[account];
+  return label ? state.accounts[account]+' · '+label : state.accounts[account];
 }
 
 function renderCoupleSetup() {
@@ -1194,7 +1229,7 @@ function renderCoupleBank(locations,preserve=false) {
       return '<option value="'+(account ?? '')+'">'+safe(coupleLocationName(account,label))+'</option>';
     }).join('') || '<option value="">Sin saldo para retirar</option>';
   } else {
-    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+accounts.map((name,account) => {
+    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+state.accounts.map((_,account) => {
       const label = kind === 'deposit' && savings?.account === account ? savings.label : '';
       return '<option value="'+account+'">'+safe(coupleLocationName(account,label))+'</option>';
     }).join('');
@@ -1266,7 +1301,7 @@ function recordCouple(entry) {
   }
   try {
     const entries = [...state.coupleFinances,entry];
-    validateCouple(entries);
+    validateCouple(entries,state.accounts.length);
     if (!save({...state,coupleFinances:entries})) return false;
     renderCouple();
     el('couple-status').textContent = 'Movimiento registrado. Consulta el estado de sincronización en Respaldo y sesión.';
@@ -1301,7 +1336,7 @@ el('couple-form').addEventListener('submit',event => {
   const entry = {
     kind, day:el('couple-day').value,
     amount:units(el('couple-amount').value), note:el('couple-note').value.trim(),
-    account:kind === 'contribution' ? accounts[account] ?? '' : coupleFundMovement(kind) ? '' : el('couple-account').value.trim(),
+    account:kind === 'contribution' ? state.accounts[account] ?? '' : coupleFundMovement(kind) ? '' : el('couple-account').value.trim(),
     reference:el('couple-reference').value.trim(), reverses:null
   };
   if (coupleFundMovement(kind) && account !== null) {
@@ -1323,7 +1358,21 @@ el('couple-history').addEventListener('click',event => {
   recordCouple({...original,day:el('couple-day').value,note:note.trim(),reverses:index});
 });
 
+function renderAccountOptions() {
+  const accountOptions = options();
+  for (const id of ['source','expense-account','manual-source','manual-destination','report-account']) {
+    const select = el(id);
+    const selected = ready ? select.value : '';
+    const placeholder = id === 'report-account' ? '<option value="">Todas las cuentas</option>'
+      : '<option value="" disabled>Selecciona una cuenta</option>';
+    select.innerHTML = placeholder+accountOptions;
+    select.value = [...select.options].some(option => option.value === selected) ? selected : '';
+  }
+}
+
 function render(openDay) {
+  renderAccountOptions();
+  el('bank-account-add').disabled = !ready;
   el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
   el('save-entry').disabled = !ready;
   el('save-expense').disabled = !ready;
@@ -1331,7 +1380,7 @@ function render(openDay) {
   el('export').disabled = !ready;
   el('download-report').disabled = !ready;
   const {posted,expected} = balancesFor(state.entries,state.expenses,state.opening,state.manualTransfers);
-  el('balances').innerHTML = table(['Bucket','Saldo registrado','Saldo previsto'],accounts.map((_,index) => row([bucketLabel(index),balanceChip(posted[index],'posted'),balanceChip(expected[index],'forecast')])).concat(row(['<strong>Total</strong>',cash(sum(posted)),cash(sum(expected))])));
+  el('balances').innerHTML = table(['Bucket','Saldo registrado','Saldo previsto'],state.accounts.map((_,index) => row([bucketLabel(index),balanceChip(posted[index],'posted'),balanceChip(expected[index],'forecast')])).concat(row(['<strong>Total</strong>',cash(sum(posted)),cash(sum(expected))])));
   renderPreview();
   renderTransfers();
   renderManualTransfers();
@@ -1343,9 +1392,9 @@ function render(openDay) {
   renderCouple(false);
 }
 function renderSettings() {
-  const accountRows = accounts.map((name,index) => row([name,
-    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje de '+name+'" value="'+(state.rates[index]/100)+'">',
-    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+name+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
+  const accountRows = state.accounts.map((name,index) => row([safe(name),
+    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje de '+safe(name)+'" value="'+(state.rates[index]/100)+'">',
+    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+safe(name)+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
   el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Porcentaje (%)','Categoría del bucket'],accountRows)
     +'<p id="rate-total" class="spaced" aria-live="polite"></p>'
     +'<p class="note">Plan temporal para Premium Travel Club · meta de $1,529 antes del 27 de noviembre de 2026. Usa los porcentajes hasta completar la meta y ajusta el último importe a lo que falte.</p>'
@@ -1358,7 +1407,7 @@ const readRates = () => fields('.rate').map(input => units(input.value));
 function updateTotal() {
   const rates = readRates();
   el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total ingresado · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
-  el('rate-total').classList.toggle('error',!validRates(rates));
+  el('rate-total').classList.toggle('error',!validRates(rates,state.accounts.length));
 }
 
 function localDay() {
@@ -1498,10 +1547,34 @@ el('card-history').addEventListener('click',event => {
   saveCards(creditCards,'Movimiento de tarjeta eliminado.');
 });
 
+el('bank-account-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const field = el('bank-account-name');
+  const status = el('bank-account-status');
+  const name = field.value.trim();
+  if (!name || name.length > 60) {
+    status.textContent = 'Escribe un nombre de hasta 60 caracteres.';
+    return;
+  }
+  if (state.accounts.some(account => accountKey(account) === accountKey(name))) {
+    status.textContent = 'Ya existe una cuenta con ese nombre.';
+    return;
+  }
+  if (!save(extendAccounts(state,[name]))) {
+    status.textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
+    return;
+  }
+  field.value = '';
+  renderSettings();
+  renderOpening();
+  render();
+  status.textContent = 'Cuenta añadida con saldo inicial de $0 y 0 % del reparto.';
+});
+
 el('day').value = localDay();
 el('report-start').value = localDay().slice(0,4)+'-01-01';
 el('report-end').value = localDay();
-el('report-account').innerHTML = '<option value="">Todas las cuentas</option>'+options();
+
 el('report-form').addEventListener('submit',event => {
   event.preventDefault();
   const start = el('report-start').value;
@@ -1519,13 +1592,9 @@ el('report-form').addEventListener('submit',event => {
   downloadFile(reportCsv(rows),'text/csv;charset=utf-8','Mara-Money-movimientos-'+start+'-a-'+end+'.csv');
   say('Reporte descargado con '+rows.length+' movimientos.');
 });
-el('source').innerHTML = options();
-el('source').selectedIndex = -1;
-el('source').insertAdjacentHTML('afterbegin','<option value="" disabled selected>Selecciona una cuenta</option>');
-el('source').value = '';
 el('source').required = true;
 el('expense-day').value = el('day').value;
-el('expense-account').innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
+
 el('expense-category').innerHTML = expenseOptions();
 el('expenses').addEventListener('change',event => {
   const field = event.target;
@@ -1551,7 +1620,7 @@ el('expense').addEventListener('submit',event => {
   const note = el('expense-note').value.trim();
   const category = el('expense-category').value;
   if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !accountValue
-      || !boundedInt(account,0,accounts.length-1) || !note || note.length > 120 || !validExpenseCategory(category)) {
+      || !boundedInt(account,0,state.accounts.length-1) || !note || note.length > 120 || !validExpenseCategory(category)) {
     say('Verifica la fecha, el importe, la cuenta y el concepto del gasto.',true);
     return;
   }
@@ -1564,12 +1633,12 @@ el('expense').addEventListener('submit',event => {
     el('expense-note').value = '';
     el('expense-category').value = '';
     render();
-    say('Gasto registrado en '+accounts[account]+'.');
+    say('Gasto registrado en '+state.accounts[account]+'.');
   }
 });
 el('opening-form').addEventListener('submit',event => {
   event.preventDefault();
-  const opening = accounts.map((_,index) => {
+  const opening = state.accounts.map((_,index) => {
     const value = el('opening-'+index).value.trim();
     return value.startsWith('-') ? -units(value.slice(1)) : units(value || '0');
   });
@@ -1590,7 +1659,7 @@ el('entry').addEventListener('submit',event => {
   const day = el('day').value;
   const amount = units(el('amount').value);
   const source = el('source').value === '' ? -1 : Number(el('source').value);
-  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !el('source').value || !boundedInt(source,0,accounts.length-1)) {
+  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !el('source').value || !boundedInt(source,0,state.accounts.length-1)) {
     say('Verifica la fecha, la cuenta y el ingreso. El monto debe estar entre $0.01 y $1,000,000, con hasta dos decimales.',true);
     return;
   }
@@ -1602,7 +1671,7 @@ el('entry').addEventListener('submit',event => {
     say('Se alcanzó el límite de registros de esta copia.',true);
     return;
   }
-  const entry = {day,amount,source,rates:[...state.rates],parts:allocate(amount,state.rates),done:accounts.map(() => false)};
+  const entry = {day,amount,source,rates:[...state.rates],parts:allocate(amount,state.rates),done:state.accounts.map(() => false)};
   if (save({...state,entries:[...state.entries,entry]})) {
     el('amount').value = '';
     render(day);
@@ -1616,7 +1685,7 @@ function updateTransfer(event) {
   const entry = state.entries.find(item => item.day === day);
   const done = [...entry.done];
   done[index] = !done[index];
-  const completedOn = entry.completedOn ? [...entry.completedOn] : accounts.map(() => null);
+  const completedOn = entry.completedOn ? [...entry.completedOn] : state.accounts.map(() => null);
   completedOn[index] = done[index] ? localDay() : null;
   if (save({...state,entries:state.entries.map(item => item === entry ? {...entry,done,completedOn} : item)})) {
     render(day);
@@ -1632,9 +1701,7 @@ function updateTransfer(event) {
 }
 el('manual-day').value = localDay();
 el('manual-day').max = localDay();
-for (const id of ['manual-source','manual-destination']) {
-  el(id).innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
-}
+
 el('manual-transfer').addEventListener('submit',event => {
   event.preventDefault();
   const day = el('manual-day').value;
@@ -1645,7 +1712,7 @@ el('manual-transfer').addEventListener('submit',event => {
   const destination = Number(to);
   const note = el('manual-note').value.trim();
   if (!validDay(day) || day > localDay() || !boundedInt(amount,1,maxIncome) || !from || !to
-      || !boundedInt(source,0,accounts.length-1) || !boundedInt(destination,0,accounts.length-1)
+      || !boundedInt(source,0,state.accounts.length-1) || !boundedInt(destination,0,state.accounts.length-1)
       || source === destination || note.length > 120) {
     say('Verifica la fecha, el importe y que las dos cuentas sean distintas.',true);
     return;
@@ -1670,14 +1737,14 @@ el('configuration').addEventListener('input',event => {
 });
 el('configuration').addEventListener('click',event => {
   if (event.target.id !== 'load-travel-plan') return;
-  fields('.rate').forEach((input,index) => { input.value = String(travelPlanRates[index]/100); });
+  fields('.rate').forEach((input,index) => { input.value = String((travelPlanRates[index] ?? 0)/100); });
   updateTotal();
   say('Plan temporal cargado. Pulsa Guardar configuración para aplicarlo a los próximos ingresos.');
 });
 el('configuration').addEventListener('submit',event => {
   event.preventDefault();
   const rates = readRates();
-  if (!validRates(rates)) {
+  if (!validRates(rates,state.accounts.length)) {
     say('Cada porcentaje debe estar entre 0 y 100, y el total debe ser exactamente 100 %. ',true);
     return;
   }
@@ -1708,9 +1775,12 @@ el('backup').addEventListener('change',async event => {
     if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
     const raw = JSON.parse(await file.text());
     if (epoch !== cloudEpoch) return;
-    const restored = validate({
-      coupleFinances:state.coupleFinances,coupleSavings:state.coupleSavings,...raw
-    });
+    let restored = validate(raw);
+    if (!Object.hasOwn(raw,'accounts')) {
+      restored = extendAccounts(restored,state.accounts.slice(baseAccounts.length));
+      if (!Object.hasOwn(raw,'coupleFinances')) restored.coupleFinances = state.coupleFinances;
+      if (!Object.hasOwn(raw,'coupleSavings')) restored.coupleSavings = state.coupleSavings;
+    }
     if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas y '+restored.coupleFinances.length+' movimientos de pareja. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
     if (save(restored,true)) {
       resetCardForms();
