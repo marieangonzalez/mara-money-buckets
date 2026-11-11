@@ -337,6 +337,7 @@ body.cloud-locked .quick-links { display:none; }
   <a href="#moves">Transferencias</a>
   <a href="#account-balances">Saldos</a>
   <a href="#credit-cards">Tarjetas</a>
+  <a href="#couple-finances">Finanzas de pareja</a>
   <a href="#history-section">Historial</a>
   <a href="#projection-title">Análisis</a>
   <a href="#report-title">Reportes</a>
@@ -443,6 +444,35 @@ body.cloud-locked .quick-links { display:none; }
 <div id="card-history"></div>
 </div>
 </section>
+<section id="couple-finances" aria-labelledby="couple-title">
+<h2 id="couple-title">Finanzas de pareja</h2>
+<p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
+<div id="couple-balances"></div>
+<label>Mes del presupuesto <input id="couple-month" type="month"></label>
+<div id="couple-budget"></div>
+<h3>Registrar movimiento</h3>
+<form id="couple-form">
+  <label>Fecha <input id="couple-day" type="date" required></label>
+  <label>Tipo <select id="couple-kind">
+    <option value="contribution">Transferencia recibida</option>
+    <option value="personal">Gasto personal de él</option>
+    <option value="shared">Gasto compartido · 50 % para él</option>
+    <option value="clubInitial">Premium Travel Club · pago inicial</option>
+    <option value="clubMonthly">Premium Travel Club · mensualidad</option>
+    <option value="deposit">Apartar para su fondo de emergencia</option>
+    <option value="withdrawal">Usar dinero de su fondo de emergencia</option>
+  </select></label>
+  <label><span id="couple-amount-label">Importe</span> <input id="couple-amount" inputmode="decimal" required></label>
+  <label>Concepto o motivo <input id="couple-note" maxlength="120" required></label>
+  <label>Cuenta o medio de pago <input id="couple-account" maxlength="120"></label>
+  <label>Recibo o referencia <input id="couple-reference" maxlength="300" placeholder="Confirmación, nombre del archivo o enlace privado"></label>
+  <button type="submit" id="couple-save">Registrar movimiento</button>
+</form>
+<p id="couple-status" class="muted" role="status"></p>
+<h3>Historial de movimientos</h3>
+<p class="muted">Los saldos siguen el orden de registro. Una anulación corrige el mes del movimiento original y queda en el historial.</p>
+<div id="couple-history"></div>
+</section>
 <section id="history-section" aria-labelledby="history-title">
 <h2 id="history-title">Historial de ingresos y transferencias</h2>
 <p class="muted">Abre un día para revisar el reparto. Actualiza el estado aquí después de mover el dinero en tu banco.</p>
@@ -518,7 +548,7 @@ const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[]});
+const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[]});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
@@ -593,6 +623,81 @@ function validateCards(cards) {
       apr:card.apr,minimum:card.minimum,due:card.due,movements};
   });
 }
+const coupleKinds = new Map([
+  ['contribution','Transferencia recibida'], ['personal','Gasto personal'], ['shared','Gasto compartido'],
+  ['clubInitial','Premium Travel Club · inicial'], ['clubMonthly','Premium Travel Club · mensualidad'],
+  ['deposit','Depósito al fondo'], ['withdrawal','Retiro del fondo']
+]);
+const coupleShared = kind => ['shared','clubInitial','clubMonthly'].includes(kind);
+const coupleExpense = kind => kind === 'personal' || coupleShared(kind);
+const coupleShare = entry => coupleShared(entry.kind) ? Math.ceil(entry.amount / 2) : entry.amount;
+
+function coupleEffect(entry) {
+  const amount = coupleShare(entry);
+  switch (entry.kind) {
+    case 'contribution': return [amount,0];
+    case 'deposit': return [-amount,amount];
+    case 'withdrawal': return [0,-amount];
+    default: return [-amount,0];
+  }
+}
+
+function coupleLedger(entries) {
+  let available = 0;
+  let fund = 0;
+  const reversed = new Set();
+  const history = entries.map((entry,index) => {
+    const original = entry.reverses === null ? entry : entries[entry.reverses];
+    const direction = original === entry ? 1 : -1;
+    const [cashChange,fundChange] = coupleEffect(original);
+    if (direction < 0) {
+      if (original.reverses !== null || reversed.has(entry.reverses)) throw Error('Esta anulación ya se registró o no es válida.');
+      reversed.add(entry.reverses);
+    }
+    if (fund + direction * fundChange < 0) throw Error('El movimiento supera el saldo del fondo de emergencia.');
+    if (entry.kind === 'deposit' && direction > 0 && entry.amount > available) throw Error('El depósito supera el sobrante disponible.');
+    available += direction * cashChange;
+    fund += direction * fundChange;
+    return {entry,original,index,direction,available,fund};
+  });
+  return {available,fund,history,reversed};
+}
+
+function validateCouple(entries) {
+  if (!Array.isArray(entries) || entries.length > maxEntries) throw Error('El historial de pareja no es válido.');
+  const checked = entries.map((entry,index) => {
+    if (!entry || !coupleKinds.has(entry.kind) || !validDay(entry.day)
+        || !boundedInt(entry.amount,1,maxIncome) || typeof entry.note !== 'string'
+        || !entry.note.trim() || entry.note.length > 120 || typeof entry.account !== 'string'
+        || entry.account.length > 120 || typeof entry.reference !== 'string' || entry.reference.length > 300
+        || !(entry.reverses === null || boundedInt(entry.reverses,0,index-1))) {
+      throw Error('Revisa la fecha, el importe y los datos del movimiento de pareja.');
+    }
+    const {kind,day,amount,note,account,reference,reverses} = entry;
+    if (reverses !== null && (kind !== entries[reverses].kind || amount !== entries[reverses].amount || day < entries[reverses].day)) {
+      throw Error('La anulación debe corresponder al movimiento original y tener una fecha igual o posterior.');
+    }
+    return {kind,day,amount,note,account,reference,reverses};
+  });
+  coupleLedger(checked);
+  return checked;
+}
+
+function coupleBudget(entries,month,reversed) {
+  const recurring = month >= '2027-01';
+  const active = entries.filter((entry,index) => entry.reverses === null &&
+    entry.day.startsWith(month) && !reversed.has(index));
+  const actual = kind => sum(active.filter(kind).map(coupleShare));
+  return {
+    recurring,
+    received: actual(entry => entry.kind === 'contribution'),
+    expenses: actual(entry => coupleExpense(entry.kind)),
+    regular: actual(entry => coupleExpense(entry.kind) && entry.kind !== 'clubInitial'),
+    clubInitial: actual(entry => entry.kind === 'clubInitial'),
+    clubMonthly: actual(entry => entry.kind === 'clubMonthly')
+  };
+}
+
 function validate(data) {
   if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates)
       || !vector(data.purposes,accounts.length,x => typeof x === 'string' && x.length <= 120)
@@ -641,7 +746,8 @@ function validate(data) {
     return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
   return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
-    creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : [])};
+    creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
+    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [])};
 }
 
 const el = id => document.getElementById(id);
@@ -671,9 +777,12 @@ let unreadable = false;
 let cloudClient = null;
 let cloudUser = null;
 let cloudPending = null;
+let cloudInFlight = null;
 let cloudWriting = false;
 let cloudFailed = false;
 let cloudEpoch = 0;
+let cloudRowExists = false;
+let cloudRevision = null;
 const cloudUrl = 'https://qkasvabnygwlfqagafqd.supabase.co';
 const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
 // Original browser data is read but never automatically uploaded or overwritten.
@@ -694,6 +803,12 @@ function cloudLock() {
   say('');
   el('cloud-retry').hidden = true;
   resetCardForms();
+  el('couple-form').reset();
+  el('couple-day').value = localDay();
+  el('couple-month').value = '';
+  el('couple-status').textContent = '';
+  updateCoupleAmount();
+  renderCouple();
 }
 function cloudUnlock() {
   document.body.classList.remove('cloud-locked');
@@ -708,13 +823,16 @@ async function cloudLoad(user) {
   cloudLock();
   cloudUser = user;
   cloudPending = null;
+  cloudInFlight = null;
   cloudFailed = false;
   cloudMessage('Cargando tus datos desde Supabase…');
   try {
-    const {data,error} = await cloudClient.from('mara_money_data').select('data').eq('user_id',user.id).maybeSingle();
+    const {data,error} = await cloudClient.from('mara_money_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
     if (error) throw error;
     if (epoch !== cloudEpoch) return;
     state = data ? validate(data.data) : initial();
+    cloudRowExists = !!data;
+    cloudRevision = data?.updated_at ?? null;
     cloudUnlock();
     cloudMessage(data ? 'Datos recuperados de la nube ✓' : 'Cuenta lista. Todavía no hay datos en la nube; importa tu respaldo JSON para recuperar tu historial.');
   } catch (error) {
@@ -722,16 +840,45 @@ async function cloudLoad(user) {
     cloudMessage('No se pudo cargar la nube: '+error.message+'. Revisa tu conexión y vuelve a iniciar sesión.',true);
   }
 }
+async function writeCloudState(payload,userId) {
+  const updatedAt = new Date(Math.max(Date.now(),Date.parse(cloudRevision || '') + 1 || 0)).toISOString();
+  const values = {data:payload,updated_at:updatedAt};
+  const source = cloudClient.from('mara_money_data');
+  let write;
+  if (cloudRowExists) {
+    const update = source.update(values).eq('user_id',userId);
+    write = cloudRevision === null ? update.is('updated_at',null) : update.eq('updated_at',cloudRevision);
+  } else {
+    write = source.insert({...values,user_id:userId});
+  }
+  const result = await write.select('updated_at').maybeSingle();
+  if (result.data) return result.data.updated_at;
+  if (result.error && result.error.code !== '23505') throw result.error;
+
+  // A retry can follow a successful write whose response never arrived.
+  const current = await cloudClient.from('mara_money_data').select('data,updated_at').eq('user_id',userId).maybeSingle();
+  if (current.error) throw current.error;
+  if (current.data && JSON.stringify(validate(current.data.data)) === JSON.stringify(payload)) {
+    return current.data.updated_at;
+  }
+  throw Error('Hay otra versión de tus datos en la nube. Exporta este respaldo, recarga y vuelve a registrar solo los cambios pendientes');
+}
+
 async function cloudFlush() {
-  if (cloudWriting || !cloudPending || !cloudUser) return;
+  if (cloudWriting || !(cloudInFlight || cloudPending) || !cloudUser) return;
   cloudWriting = true;
   const epoch = cloudEpoch;
   try {
-    while (cloudPending && epoch === cloudEpoch) {
-      const payload = cloudPending;
-      cloudPending = null;
-      const {error} = await cloudClient.from('mara_money_data').upsert({user_id:cloudUser.id,data:payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-      if (error) throw error;
+    while ((cloudInFlight || cloudPending) && epoch === cloudEpoch) {
+      if (!cloudInFlight) {
+        cloudInFlight = cloudPending;
+        cloudPending = null;
+      }
+      const revision = await writeCloudState(cloudInFlight,cloudUser.id);
+      if (epoch !== cloudEpoch) return;
+      cloudRowExists = true;
+      cloudRevision = revision;
+      cloudInFlight = null;
     }
     if (epoch === cloudEpoch) {
       cloudFailed = false;
@@ -740,7 +887,6 @@ async function cloudFlush() {
     }
   } catch (error) {
     if (epoch === cloudEpoch) {
-      if (!cloudPending) cloudPending = state;
       cloudFailed = true;
       el('cloud-retry').hidden = false;
       el('backup-section').open = true;
@@ -749,7 +895,7 @@ async function cloudFlush() {
     }
   } finally {
     cloudWriting = false;
-    if (cloudPending && !cloudFailed) void cloudFlush();
+    if ((cloudInFlight || cloudPending) && !cloudFailed) void cloudFlush();
   }
 }
 function save(next,recover=false) {
@@ -986,6 +1132,95 @@ function reportCsv(rows) {
     name(item.destination),category(item.destination),item.note,(item.amount/100).toFixed(2),item.dateBasis]);
   return '\uFEFF'+[header,...lines].map(cells => cells.map(csvCell).join(',')).join('\r\n')+'\r\n';
 }
+function updateCoupleAmount() {
+  el('couple-amount-label').textContent = coupleShared(el('couple-kind').value) ? 'Importe total del recibo' : 'Importe';
+}
+
+function renderCouple() {
+  const history = el('couple-history');
+  const balances = el('couple-balances');
+  const budget = el('couple-budget');
+  el('couple-save').disabled = !ready;
+  if (!ready) {
+    history.replaceChildren();
+    balances.replaceChildren();
+    budget.replaceChildren();
+    return;
+  }
+  el('couple-month').value ||= localDay().slice(0,7);
+  el('couple-day').value ||= localDay();
+  const month = el('couple-month').value;
+  const {available,fund,history:entries,reversed} = coupleLedger(state.coupleFinances);
+  balances.innerHTML = table(['Sobrante disponible','Fondo de emergencia de él','Total bajo tu custodia'],
+    [row([cash(available),cash(fund),cash(available+fund)])]);
+  const actual = coupleBudget(state.coupleFinances,month,reversed);
+  const budgetRow = (label,planned,paid) => row([label,planned === null ? '—' : cash(planned),cash(paid),
+    planned === null ? '—' : cash(planned-paid)]);
+  const initialPaid = sum(entries.filter(({original}) => original.kind === 'clubInitial')
+    .map(({original,direction}) => direction * coupleShare(original)));
+  budget.innerHTML = '<p>Desde enero de 2027, aportación sugerida de '+cash(50000)+' cada dos viernes.</p>'
+    + table(['Concepto','Presupuesto de él','Real de él','Presupuesto − real'],[
+      budgetRow('Obligaciones del mes',actual.recurring ? 103224 : null,actual.regular),
+      budgetRow('Mensualidad del club · incluida arriba',actual.recurring ? 7624 : null,actual.clubMonthly),
+      budgetRow('Pago inicial del club · por separado',month === '2026-11' ? 76450 : null,actual.clubInitial)
+    ])
+    + '<p class="muted">Premium Travel Club. Pago inicial de '+cash(152900)+' con vencimiento el 27 nov 2026. Mensualidad de '
+    + cash(15248)+' desde enero de 2027. Del inicial, se han registrado '+cash(initialPaid)+' a su cargo.</p>'
+    + '<p>Recibido en el mes '+cash(actual.received)+' · Pagado a su cargo '+cash(actual.expenses)
+    + ' · Sobrante del mes antes del fondo '+cash(actual.received-actual.expenses)+'</p>';
+  history.innerHTML = entries.length ? table(
+    ['N.º / fecha','Movimiento','Importe total','Parte de él','Cuenta o medio','Recibo o referencia','Disponible','Fondo','Corrección'],
+    entries.slice().reverse().map(({entry,index,direction,available,fund}) => row([
+      (index+1)+' · '+safe(entry.day),
+      (direction < 0 ? 'Anulación de #'+(entry.reverses+1)+' · ' : '')+coupleKinds.get(entry.kind)+'<br>'+safe(entry.note),
+      cash(direction*entry.amount),cash(direction*coupleShare(entry)),safe(entry.account || '—'),
+      safe(entry.reference || '—'),cash(available),cash(fund),
+      direction < 0 ? '—' : reversed.has(index) ? 'Anulado'
+        : '<button type="button" class="secondary" data-couple-reverse="'+index+'" aria-label="Anular movimiento '+(index+1)+'">Anular</button>'
+    ]))) : '<p class="muted">Todavía no hay movimientos.</p>';
+}
+
+function recordCouple(entry) {
+  if (!ready || !cloudUser || cloudFailed) {
+    el('couple-status').textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
+    return false;
+  }
+  try {
+    const entries = [...state.coupleFinances,entry];
+    validateCouple(entries);
+    if (!save({...state,coupleFinances:entries})) return false;
+    renderCouple();
+    el('couple-status').textContent = 'Movimiento registrado. Consulta el estado de sincronización en Respaldo y sesión.';
+    return true;
+  } catch (error) {
+    el('couple-status').textContent = error.message;
+    return false;
+  }
+}
+
+el('couple-kind').addEventListener('change',updateCoupleAmount);
+el('couple-month').addEventListener('change',renderCouple);
+el('couple-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const entry = {
+    kind:el('couple-kind').value, day:el('couple-day').value,
+    amount:units(el('couple-amount').value), note:el('couple-note').value.trim(),
+    account:el('couple-account').value.trim(), reference:el('couple-reference').value.trim(), reverses:null
+  };
+  if (recordCouple(entry)) {
+    for (const id of ['couple-amount','couple-note','couple-account','couple-reference']) el(id).value = '';
+  }
+});
+el('couple-history').addEventListener('click',event => {
+  const button = event.target.closest('button[data-couple-reverse]');
+  if (!ready || !button) return;
+  const index = Number(button.dataset.coupleReverse);
+  const original = state.coupleFinances[index];
+  const note = prompt('Motivo de la anulación del movimiento #'+(index+1)+' con fecha '+el('couple-day').value);
+  if (note === null) return;
+  recordCouple({...original,day:el('couple-day').value,note:note.trim(),reverses:index});
+});
+
 function render(openDay) {
   el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
   el('save-entry').disabled = !ready;
@@ -1002,6 +1237,7 @@ function render(openDay) {
   renderExpenses();
   renderProjection();
   renderCards();
+  renderCouple();
 }
 function renderSettings() {
   const accountRows = accounts.map((name,index) => row([name,
@@ -1367,9 +1603,10 @@ el('backup').addEventListener('change',async event => {
   if (!file) return;
   try {
     if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
-    const restored = validate(JSON.parse(await file.text()));
+    const raw = JSON.parse(await file.text());
     if (epoch !== cloudEpoch) return;
-    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
+    const restored = validate(Object.hasOwn(raw ?? {},'coupleFinances') ? raw : {...raw,coupleFinances:state.coupleFinances});
+    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas y '+restored.coupleFinances.length+' movimientos de pareja. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
     if (save(restored,true)) {
       resetCardForms();
       renderSettings();
@@ -1458,7 +1695,7 @@ document.querySelector('a[href="#backup-section"]').addEventListener('click',() 
   el('backup-section').open = true;
 });
 el('cloud-signout').addEventListener('click',async () => {
-  if (cloudPending || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
+  if (cloudPending || cloudInFlight || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
   await cloudClient.auth.signOut();
 });
 el('cloud-retry').addEventListener('click',() => {
@@ -1468,7 +1705,7 @@ el('cloud-retry').addEventListener('click',() => {
   void cloudFlush();
 });
 window.addEventListener('beforeunload',event => {
-  if (cloudPending || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
+  if (cloudPending || cloudInFlight || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
 });
 (async () => {
   if (!window.supabase?.createClient) return cloudMessage('No se pudo cargar la librería de Supabase. Verifica Internet y recarga.',true);
@@ -1476,7 +1713,7 @@ window.addEventListener('beforeunload',event => {
     cloudClient = window.supabase.createClient(cloudUrl,cloudPublicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     cloudClient.auth.onAuthStateChange((event,session) => {
       if (event === 'SIGNED_OUT') {
-        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudFailed = false;
+        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudInFlight = null; cloudFailed = false;
         state = initial(); cloudLock(); renderSettings(); renderOpening(); render();
         cloudMessage('Inicia sesión para ver tus datos.');
       } else if (event === 'SIGNED_IN' && session?.user && session.user.id !== cloudUser?.id) {
