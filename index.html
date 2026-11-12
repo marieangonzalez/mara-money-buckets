@@ -945,14 +945,12 @@ function validate(data) {
   if (nextRates !== null && !validRates(nextRates,accounts.length)) {
     throw Error('El reparto desde el 28 de noviembre debe sumar 100 %.');
   }
-  const days = new Set();
   const entries = data.entries.map(entry => {
-    if (!entry || !validDay(entry.day) || days.has(entry.day) || !boundedInt(entry.amount,1,maxIncome)
+    if (!entry || !validDay(entry.day) || !boundedInt(entry.amount,1,maxIncome)
         || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates,accounts.length)
         || !vector(entry.parts,accounts.length,x => boundedInt(x,0,entry.amount))
         || !allocate(entry.amount,entry.rates).every((part,index) => part === entry.parts[index])
         || !vector(entry.done,accounts.length,(x,index) => typeof x === 'boolean' && (!x || (index !== entry.source && entry.parts[index] > 0)))) throw Error('El respaldo contiene un ingreso o una transferencia inválida.');
-    days.add(entry.day);
     const result = {day:entry.day,amount:entry.amount,source:entry.source,rates:entry.rates,parts:entry.parts,done:entry.done};
     if (Object.hasOwn(entry,'completedOn')) {
       if (!vector(entry.completedOn,accounts.length,(date,index) => date === null || (entry.done[index] && validDay(date)))) {
@@ -1197,14 +1195,15 @@ function renderPreview() {
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
-function transferButton(entry,index) {
+function transferButton(entry,entryIndex,index) {
   const label = entry.done[index] ? 'Volver a pendiente' : 'Marcar completada';
-  return '<button type="button" class="secondary" data-day="'+entry.day+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button>';
+  return '<button type="button" class="secondary" data-entry-index="'+entryIndex+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button>';
 }
 function renderTransfers() {
-  const rows = [...state.entries].sort((a,b) => a.day.localeCompare(b.day)).flatMap(entry =>
+  const rows = state.entries.map((entry,entryIndex) => ({entry,entryIndex}))
+    .sort((a,b) => a.entry.day.localeCompare(b.entry.day)).flatMap(({entry,entryIndex}) =>
     entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index]
-      ? [row([entry.day,bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,index)+'</div>'])]
+      ? [row([entry.day+' · Ingreso '+(entryIndex+1)+' ('+money(entry.amount)+')',bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,entryIndex,index)+'</div>'])]
       : []));
   el('transfers').innerHTML = rows.length ? table(['Ingreso del','Desde','Hacia','Importe','Acción'],rows)
     : '<p class="muted">No hay transferencias pendientes. Cuando registres un ingreso, aquí aparecerán los importes que debas mover a otras cuentas.</p>';
@@ -1215,22 +1214,31 @@ function renderManualTransfers() {
   el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto'],rows)
     : '<p class="muted">Aún no hay transferencias manuales registradas.</p>';
 }
-function renderHistory(openDay) {
-  el('history').innerHTML = state.entries.length ? [...state.entries].sort((a,b) => b.day.localeCompare(a.day)).map(entry => {
+function dailyIncomeTotals(entries) {
+  const totals = new Map();
+  for (const entry of entries) totals.set(entry.day,(totals.get(entry.day) ?? 0)+entry.amount);
+  return totals;
+}
+function renderHistory(openEntryIndex) {
+  const totals = dailyIncomeTotals(state.entries);
+  let previousDay;
+  el('history').innerHTML = state.entries.length ? state.entries.map((entry,entryIndex) => ({entry,entryIndex}))
+    .sort((a,b) => b.entry.day.localeCompare(a.entry.day) || b.entryIndex-a.entryIndex).map(({entry,entryIndex}) => {
+    const heading = entry.day === previousDay ? '' : '<h4>'+entry.day+' · Total del día '+money(totals.get(entry.day))+'</h4>';
+    previousDay = entry.day;
     const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index]).length;
     const rows = state.accounts.map((_,index) => {
       const part = entry.parts[index];
       const move = index !== entry.source && part > 0;
       const status = index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
-      const action = move ? transferButton(entry,index) : '';
+      const action = move ? transferButton(entry,entryIndex,index) : '';
       return row([bucketLabel(index),pct(entry.rates[index]),cash(part),stateChip(status,move ? (entry.done[index] ? 'done' : 'pending') : 'neutral'),action]);
     });
-    return '<details '+(entry.day === openDay ? 'open' : '')+'><summary>'+entry.day+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
+    return heading+'<details '+(entryIndex === openEntryIndex ? 'open' : '')+'><summary>Ingreso '+(entryIndex+1)+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
   }).join('') : '<p class="muted">Todavía no hay ingresos registrados.</p>';
 }
 function renderExpenses() {
-  const days = new Map();
-  for (const entry of state.entries) days.set(entry.day,{income:entry.amount,expense:0});
+  const days = new Map([...dailyIncomeTotals(state.entries)].map(([day,income]) => [day,{income,expense:0}]));
   for (const expense of state.expenses) {
     const totals = days.get(expense.day) ?? {income:0,expense:0};
     totals.expense += expense.amount;
@@ -1241,7 +1249,8 @@ function renderExpenses() {
   el('daily').innerHTML = dailyRows.length ? table(['Fecha','Ingresos','Gastos','Neto'],dailyRows) : '<p class="muted">Aún no hay ingresos ni gastos.</p>';
   const expenseRows = state.expenses.map((expense,index) => ({expense,index})).reverse()
     .sort((a,b) => b.expense.day.localeCompare(a.expense.day)).map(({expense,index}) =>
-      row([expense.day,safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
+      row(['<form data-expense-index="'+index+'"><input type="date" id="expense-date-'+index+'" name="day" value="'+expense.day+
+        '" aria-label="Fecha de '+safe(expense.note)+'" required> <button type="submit" class="secondary">Guardar fecha</button></form>',safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
         '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>']));
   el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
 }
@@ -1373,7 +1382,7 @@ function reportRows(data,start,end,account,type) {
     rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory});
   }
   for (const entry of data.entries) {
-    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso diario');
+    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso registrado');
     entry.parts.forEach((part,index) => {
       if (!entry.done[index]) return;
       const completed = entry.completedOn?.[index];
@@ -1574,7 +1583,7 @@ function renderAccountOptions() {
   }
 }
 
-function render(openDay) {
+function render(openEntryIndex) {
   renderAccountOptions();
   el('bank-account-add').disabled = !ready;
   el('save-entry').disabled = !ready;
@@ -1587,7 +1596,7 @@ function render(openDay) {
   renderPreview();
   renderTransfers();
   renderManualTransfers();
-  renderHistory(openDay);
+  renderHistory(openEntryIndex);
   renderExpenses();
   renderProjection();
   renderCards();
@@ -1827,6 +1836,24 @@ el('expenses').addEventListener('change',event => {
     field.value = state.expenses[index].category || '';
   }
 });
+el('expenses').addEventListener('submit',event => {
+  const form = event.target;
+  if (!form.matches('form[data-expense-index]')) return;
+  event.preventDefault();
+  const index = Number(form.dataset.expenseIndex);
+  const day = form.elements.namedItem('day').value;
+  if (!boundedInt(index,0,state.expenses.length-1) || !validDay(day)) {
+    say('Verifica la fecha del gasto.',true);
+    return;
+  }
+  if (day === state.expenses[index].day) return;
+  const expenses = state.expenses.map((expense,i) => i === index ? {...expense,day} : expense);
+  if (save({...state,expenses})) {
+    render();
+    el('expense-date-'+index).focus();
+    say('Fecha del gasto actualizada.');
+  }
+});
 el('expense').addEventListener('submit',event => {
   event.preventDefault();
   const day = el('expense-day').value;
@@ -1883,38 +1910,37 @@ el('entry').addEventListener('submit',event => {
     say('Verifica la fecha, la cuenta y el ingreso. El monto debe estar entre $0.01 y $1,000,000, con hasta dos decimales.',true);
     return;
   }
-  if (state.entries.some(entry => entry.day === day)) {
-    say('Ya hay un ingreso registrado para ese día. Cada fecha admite un total diario.',true);
-    return;
-  }
   if (state.entries.length >= maxEntries) {
     say('Se alcanzó el límite de registros de esta copia.',true);
     return;
   }
   const rates = [...incomeRates(day)];
   const entry = {day,amount,source,rates,parts:allocate(amount,rates),done:state.accounts.map(() => false)};
+  const entryIndex = state.entries.length;
   if (save({...state,entries:[...state.entries,entry]})) {
     el('amount').value = '';
-    render(day);
+    render(entryIndex);
     say('Ingreso registrado. Puedes actualizar las transferencias en el historial.');
   }
 });
 function updateTransfer(event) {
-  const button = event.target.closest('button[data-day]');
+  const button = event.target.closest('button[data-entry-index]');
   if (!button) return;
-  const {day,index} = button.dataset;
-  const entry = state.entries.find(item => item.day === day);
+  const entryIndex = Number(button.dataset.entryIndex);
+  const index = Number(button.dataset.index);
+  const entry = state.entries[entryIndex];
+  if (!entry || !boundedInt(index,0,entry.parts.length-1) || index === entry.source || !entry.parts[index]) return;
   const done = [...entry.done];
   done[index] = !done[index];
   const completedOn = entry.completedOn ? [...entry.completedOn] : state.accounts.map(() => null);
   completedOn[index] = done[index] ? localDay() : null;
-  if (save({...state,entries:state.entries.map(item => item === entry ? {...entry,done,completedOn} : item)})) {
-    render(day);
+  if (save({...state,entries:state.entries.map((item,i) => i === entryIndex ? {...entry,done,completedOn} : item)})) {
+    render(entryIndex);
     if (event.currentTarget?.id === 'transfers') {
-      const nextPending = el('transfers').querySelectorAll('button[data-day]')[0];
+      const nextPending = el('transfers').querySelectorAll('button[data-entry-index]')[0];
       (nextPending ?? el('transfers-title')).focus();
     } else {
-      const nextButton = [...el('history').querySelectorAll('button[data-day]')].find(item => item.dataset.day === day && item.dataset.index === index);
+      const nextButton = [...el('history').querySelectorAll('button[data-entry-index]')].find(item => Number(item.dataset.entryIndex) === entryIndex && Number(item.dataset.index) === index);
       nextButton?.focus();
     }
     say(done[index] ? 'Transferencia completada.' : 'Transferencia marcada como pendiente.');
