@@ -312,7 +312,7 @@ button.secondary { border-color: #dcc3d5; background: var(--pale); color: var(--
 button.secondary:hover:enabled { background: #f0dce8; }
 button:disabled { opacity: .52; cursor: default; }
 :where(a,button,input,select,summary):focus-visible { outline: 3px solid #9b36a4; outline-offset: 2px; }
-.table { overflow: auto; }
+.table { container-type: inline-size; min-width: 0; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: middle; text-align: left; }
 th { background: var(--pale); color: var(--purple); font-size: .84rem; }
@@ -391,6 +391,39 @@ td button, .money { white-space: nowrap; }
 #cloud-access .cloud-message { font-weight: 650; }
 body.cloud-locked main > :not(#cloud-access):not(#status) { display:none !important; }
 body.cloud-locked .nav-bar { display:none; }
+
+.field-caption { display: none; }
+.table table { table-layout: fixed; }
+.table :is(th, td, button), .field-value { overflow-wrap: anywhere; }
+.field-value, .entries > * { min-width: 0; }
+td button, .table :is(.money, .balance-chip, .state-chip) { white-space: normal; }
+#settings table input[type=text] { min-width: 0; }
+@container (max-width: 60rem) {
+  .table table, .table tbody { display: block; }
+  .table thead {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .table tbody > tr {
+    display: block; margin-block: 8px; padding: 3px 10px;
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .table td {
+    display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center; gap: 8px; padding: 6px 0;
+  }
+  .table td:last-child { border-bottom: 0; }
+  .field-caption { display: block; color: var(--muted); font-weight: 650; }
+  .field-value :is(input, select) { max-width: 100%; min-width: 0; }
+}
+@container (max-width: 18rem) {
+  .table td { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}
+@media (max-width: 620px) {
+  main { padding-inline: 8px; }
+  .workspace-grid :is(section, details), #cloud-access { padding-inline: 10px; }
+  .entries { grid-template-columns: minmax(0, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -1017,8 +1050,15 @@ const bucketLabel = index => {
 const options = () => state.accounts.map((name,i) => '<option value="'+i+'">'+safe(name)+'</option>').join('');
 const expenseOptions = (selected='') => ['',...expenseCategories].map(category =>
   '<option value="'+safe(category)+'"'+(category === selected ? ' selected' : '')+'>'+(category || 'Sin categoría')+'</option>').join('');
-const table = (columns,rows) => '<div class="table"><table><thead><tr>'+columns.map(x => '<th scope="col">'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
-const row = cells => '<tr>'+cells.map(x => '<td>'+x+'</td>').join('')+'</tr>';
+function table(columns,rows) {
+  const headers = columns.map(label => '<th role="columnheader" scope="col">'+safe(label)+'</th>').join('');
+  const body = rows.map(({cells}) => '<tr role="row">'+cells.map((value,index) =>
+    '<td role="cell"><span class="field-caption" aria-hidden="true">'+safe(columns[index])+
+    '</span><div class="field-value">'+value+'</div></td>').join('')+'</tr>').join('');
+  return '<div class="table"><table role="table"><thead role="rowgroup"><tr role="row">'+headers+
+    '</tr></thead><tbody role="rowgroup">'+body+'</tbody></table></div>';
+}
+const row = cells => ({cells});
 const cash = value => '<span class="money">'+money(value)+'</span>';
 const say = (message,error=false) => {
   el('status').textContent = message;
@@ -2263,4 +2303,5 @@ window.addEventListener('beforeunload',event => {
 </script>
 </body>
 </html>
+
 
