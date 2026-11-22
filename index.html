@@ -525,6 +525,7 @@ body.cloud-locked .nav-bar { display:none; }
 <p id="bank-account-sync" class="muted" role="status" hidden></p>
 <p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
 <div id="balances"></div>
+<button type="button" class="secondary spaced" id="reset-balances" disabled>Restablecer balances a $0</button>
 <details class="spaced">
 <summary>Saldos iniciales</summary>
 <p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
@@ -767,9 +768,10 @@ function balancesFor(entries,expenses=[],opening=baseAccounts.map(() => 0),manua
   const posted = [...opening];
   const expected = [...opening];
   for (const entry of entries) {
+    if (entry.archived) continue;
     posted[entry.source] += entry.amount;
     entry.parts.forEach((part,index) => {
-      expected[index] += part;
+      expected[entry.cancelled?.includes(index) ? entry.source : index] += part;
       if (index !== entry.source && entry.done[index]) {
         posted[entry.source] -= part;
         posted[index] += part;
@@ -777,10 +779,12 @@ function balancesFor(entries,expenses=[],opening=baseAccounts.map(() => 0),manua
     });
   }
   for (const expense of expenses) {
+    if (expense.archived) continue;
     posted[expense.account] -= expense.amount;
     expected[expense.account] -= expense.amount;
   }
   for (const move of manualTransfers) {
+    if (move.archived) continue;
     posted[move.source] -= move.amount;
     posted[move.destination] += move.amount;
     expected[move.source] -= move.amount;
@@ -953,6 +957,13 @@ function validate(data) {
         || !allocate(entry.amount,entry.rates).every((part,index) => part === entry.parts[index])
         || !vector(entry.done,accounts.length,(x,index) => typeof x === 'boolean' && (!x || (index !== entry.source && entry.parts[index] > 0)))) throw Error('El respaldo contiene un ingreso o una transferencia inválida.');
     const result = {day:entry.day,amount:entry.amount,source:entry.source,rates:entry.rates,parts:entry.parts,done:entry.done};
+    if (entry.archived === true) result.archived = true;
+    if (entry.cancelled !== undefined) {
+      if (!Array.isArray(entry.cancelled) || entry.cancelled.length > accounts.length
+          || !entry.cancelled.every(i => boundedInt(i,0,accounts.length-1) && i !== entry.source && entry.parts[i] > 0 && !entry.done[i])
+          || new Set(entry.cancelled).size !== entry.cancelled.length) throw Error('Transferencias eliminadas inválidas.');
+      result.cancelled = entry.cancelled;
+    }
     if (Object.hasOwn(entry,'completedOn')) {
       if (!vector(entry.completedOn,accounts.length,(date,index) => date === null || (entry.done[index] && validDay(date)))) {
         throw Error('El respaldo contiene una fecha de transferencia inválida.');
@@ -970,6 +981,7 @@ function validate(data) {
         || !boundedInt(expense.amount,1,maxIncome) || typeof expense.note !== 'string'
         || !expense.note.trim() || expense.note.length > 120) throw Error('El respaldo contiene un gasto inválido.');
     const result = {day:expense.day,account:expense.account,amount:expense.amount,note:expense.note};
+    if (expense.archived === true) result.archived = true;
     if (Object.hasOwn(expense,'category')) {
       if (!validExpenseCategory(expense.category)) throw Error('El respaldo contiene una categoría de gasto inválida.');
       result.category = expense.category;
@@ -984,7 +996,7 @@ function validate(data) {
         || !boundedInt(move.amount,1,maxIncome) || typeof move.note !== 'string' || move.note.length > 120) {
       throw Error('El respaldo contiene una transferencia manual inválida.');
     }
-    return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
+    return {...(move.archived === true ? {archived:true} : {}),day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
   return {version:1,accounts,provisional:data.provisional,nextRates,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
     creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
@@ -1196,23 +1208,27 @@ function renderPreview() {
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
+function removeButton(collection,index,label,part) {
+  const target = part === undefined ? '' : ' data-part="'+part+'"';
+  return '<button type="button" class="secondary" data-remove="'+collection+'" data-record="'+index+'"'+target+'>'+label+'</button>';
+}
 function transferButton(entry,entryIndex,index) {
   const label = entry.done[index] ? 'Volver a pendiente' : 'Marcar completada';
-  return '<button type="button" class="secondary" data-entry-index="'+entryIndex+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button>';
+  return '<button type="button" class="secondary" data-entry-index="'+entryIndex+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button> '+removeButton('entries',entryIndex,'Eliminar transferencia',index);
 }
 function renderTransfers() {
   const rows = state.entries.map((entry,entryIndex) => ({entry,entryIndex}))
     .sort((a,b) => a.entry.day.localeCompare(b.entry.day)).flatMap(({entry,entryIndex}) =>
-    entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index]
+    entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index] && !entry.archived && !entry.cancelled?.includes(index)
       ? [row([entry.day+' · Ingreso '+(entryIndex+1)+' ('+money(entry.amount)+')',bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,entryIndex,index)+'</div>'])]
       : []));
   el('transfers').innerHTML = rows.length ? table(['Ingreso del','Desde','Hacia','Importe','Acción'],rows)
     : '<p class="muted">No hay transferencias pendientes. Cuando registres un ingreso, aquí aparecerán los importes que debas mover a otras cuentas.</p>';
 }
 function renderManualTransfers() {
-  const rows = [...state.manualTransfers].reverse().sort((a,b) => b.day.localeCompare(a.day)).map(move =>
-    row([move.day,bucketLabel(move.source),bucketLabel(move.destination),cash(move.amount),stateChip('Completada','done'),safe(move.note || '—')]));
-  el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto'],rows)
+  const rows = state.manualTransfers.map((move,index) => ({move,index})).reverse().sort((a,b) => b.move.day.localeCompare(a.move.day)).map(({move,index}) =>
+    row([move.day,bucketLabel(move.source),bucketLabel(move.destination),cash(move.amount),stateChip('Completada','done'),safe(move.note || '—'),removeButton('manualTransfers',index,'Eliminar transferencia')]));
+  el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto','Acción'],rows)
     : '<p class="muted">Aún no hay transferencias manuales registradas.</p>';
 }
 function dailyIncomeTotals(entries) {
@@ -1227,15 +1243,15 @@ function renderHistory(openEntryIndex) {
     .sort((a,b) => b.entry.day.localeCompare(a.entry.day) || b.entryIndex-a.entryIndex).map(({entry,entryIndex}) => {
     const heading = entry.day === previousDay ? '' : '<h4>'+entry.day+' · Total del día '+money(totals.get(entry.day))+'</h4>';
     previousDay = entry.day;
-    const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index]).length;
+    const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index] && !entry.archived && !entry.cancelled?.includes(index)).length;
     const rows = state.accounts.map((_,index) => {
       const part = entry.parts[index];
       const move = index !== entry.source && part > 0;
-      const status = index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
-      const action = move ? transferButton(entry,entryIndex,index) : '';
+      const status = entry.cancelled?.includes(index) ? 'Eliminada' : entry.archived && move && !entry.done[index] ? 'Archivada' : index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
+      const action = move && !entry.archived && !entry.cancelled?.includes(index) ? transferButton(entry,entryIndex,index) : '';
       return row([bucketLabel(index),pct(entry.rates[index]),cash(part),stateChip(status,move ? (entry.done[index] ? 'done' : 'pending') : 'neutral'),action]);
     });
-    return heading+'<details '+(entryIndex === openEntryIndex ? 'open' : '')+'><summary>Ingreso '+(entryIndex+1)+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
+    return heading+'<details '+(entryIndex === openEntryIndex ? 'open' : '')+'><summary>Ingreso '+(entryIndex+1)+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.'+(entry.archived ? ' Anterior al restablecimiento.' : '')+'</p>'+removeButton('entries',entryIndex,'Eliminar ingreso')+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
   }).join('') : '<p class="muted">Todavía no hay ingresos registrados.</p>';
 }
 function renderExpenses() {
@@ -1252,8 +1268,8 @@ function renderExpenses() {
     .sort((a,b) => b.expense.day.localeCompare(a.expense.day)).map(({expense,index}) =>
       row(['<form data-expense-index="'+index+'"><input type="date" id="expense-date-'+index+'" name="day" value="'+expense.day+
         '" aria-label="Fecha de '+safe(expense.note)+'" required> <button type="submit" class="secondary">Guardar fecha</button></form>',safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
-        '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>']));
-  el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
+        '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>',removeButton('expenses',index,'Eliminar gasto')]));
+  el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría','Acción'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
 }
 function renderOpening() {
   const rows = state.accounts.map((name,index) => row([safe(name),
@@ -1279,8 +1295,8 @@ function analyzeFinances(data,today) {
   for (const move of movements) {
     const source = summaries[move.source];
     const destination = summaries[move.destination];
-    if (source) source.balance -= move.amount;
-    if (destination) destination.balance += move.amount;
+    if (source && !move.archived) source.balance -= move.amount;
+    if (destination && !move.archived) destination.balance += move.amount;
     if (move.day < start) continue;
     if (move.kind === 'Ingreso') destination.income += move.amount;
     if (move.kind === 'Gasto') {
@@ -1299,9 +1315,9 @@ function analyzeFinances(data,today) {
     }
   }
   for (const entry of data.entries) {
-    if (entry.day > today) continue;
+    if (entry.archived || entry.day > today) continue;
     entry.parts.forEach((part,index) => {
-      if (index === entry.source || entry.done[index] || !part) return;
+      if (index === entry.source || entry.done[index] || entry.cancelled?.includes(index) || !part) return;
       summaries[index].pendingIn += part;
       summaries[entry.source].pendingOut += part;
     });
@@ -1377,25 +1393,25 @@ function renderProjection() {
 }
 function reportRows(data,start,end,account,type) {
   const rows = [];
-  function add(day,kind,source,destination,amount,note,dateBasis='Fecha registrada',expenseCategory='') {
+  function add(day,kind,source,destination,amount,note,dateBasis='Fecha registrada',expenseCategory='',archived=false) {
     if (day < start || day > end || (type && kind !== type)) return;
     if (account !== -1 && source !== account && destination !== account) return;
-    rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory});
+    rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory,archived});
   }
   for (const entry of data.entries) {
-    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso registrado');
+    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso registrado','Fecha registrada','',entry.archived);
     entry.parts.forEach((part,index) => {
       if (!entry.done[index]) return;
       const completed = entry.completedOn?.[index];
       add(completed || entry.day,'Transferencia',entry.source,index,part,'Entre cuentas propias',
-        completed ? 'Fecha en que se marcó completada' : 'Fecha del ingreso asociado');
+        completed ? 'Fecha en que se marcó completada' : 'Fecha del ingreso asociado','',entry.archived);
     });
   }
   for (const expense of data.expenses) {
-    add(expense.day,'Gasto',expense.account,null,expense.amount,expense.note,'Fecha registrada',expense.category);
+    add(expense.day,'Gasto',expense.account,null,expense.amount,expense.note,'Fecha registrada',expense.category,expense.archived);
   }
   for (const move of data.manualTransfers ?? []) {
-    add(move.day,'Transferencia',move.source,move.destination,move.amount,move.note || 'Entre cuentas propias');
+    add(move.day,'Transferencia',move.source,move.destination,move.amount,move.note || 'Entre cuentas propias','Fecha registrada','',move.archived);
   }
   return rows.sort((a,b) => a.day.localeCompare(b.day));
 }
@@ -1587,6 +1603,7 @@ function renderAccountOptions() {
 function render(openEntryIndex) {
   renderAccountOptions();
   el('bank-account-add').disabled = !ready;
+  el('reset-balances').disabled = !ready;
   el('save-entry').disabled = !ready;
   el('save-expense').disabled = !ready;
   el('save-manual-transfer').disabled = !ready;
@@ -1924,6 +1941,45 @@ el('entry').addEventListener('submit',event => {
     say('Ingreso registrado. Puedes actualizar las transferencias en el historial.');
   }
 });
+el('reset-balances').addEventListener('click',() => {
+  if (!confirm('¿Poner en $0 los saldos registrados y previstos de todas tus cuentas? Los ingresos, gastos y transferencias actuales quedarán en el historial. Las transferencias pendientes de esos ingresos se archivarán.')) return;
+  const archive = records => records.map(record => ({...record,archived:true}));
+  if (save({...state,opening:state.accounts.map(() => 0),entries:archive(state.entries),
+      expenses:archive(state.expenses),manualTransfers:archive(state.manualTransfers)})) {
+    renderOpening();
+    render();
+    say('Balances restablecidos a $0.');
+  }
+});
+const recordLabels = {entries:'el ingreso',expenses:'el gasto',manualTransfers:'la transferencia'};
+for (const section of ['transfers','history','expenses','manual-history']) {
+  el(section).addEventListener('click',event => {
+    const button = event.target.closest('button[data-remove]');
+    if (!button) return;
+    const collection = button.dataset.remove;
+    const index = Number(button.dataset.record);
+    const record = state[collection][index];
+    if (!record) return;
+    let records;
+    if (button.hasAttribute('data-part')) {
+      const part = Number(button.dataset.part);
+      if (record.archived || record.cancelled?.includes(part)) return;
+      if (!confirm('¿Eliminar la transferencia de '+money(record.parts[part])+' hacia '+state.accounts[part]+' del ingreso del '+record.day+'? Ese importe quedará en '+state.accounts[record.source]+'.')) return;
+      const done = [...record.done];
+      done[part] = false;
+      const completedOn = record.completedOn?.map((date,i) => i === part ? null : date);
+      records = state.entries.map((item,i) => i === index ? {...record,done,...(completedOn ? {completedOn} : {}),cancelled:[...(record.cancelled ?? []),part]} : item);
+    } else {
+      const detail = collection === 'entries' ? ' También se eliminarán sus transferencias asociadas.' : '';
+      if (!confirm('¿Eliminar '+recordLabels[collection]+' de '+money(record.amount)+' del '+record.day+'?'+detail)) return;
+      records = state[collection].filter((_,i) => i !== index);
+    }
+    if (save({...state,[collection]:records})) {
+      render();
+      say('Registro eliminado.');
+    }
+  });
+}
 function updateTransfer(event) {
   const button = event.target.closest('button[data-entry-index]');
   if (!button) return;
@@ -2207,3 +2263,4 @@ window.addEventListener('beforeunload',event => {
 </script>
 </body>
 </html>
+
