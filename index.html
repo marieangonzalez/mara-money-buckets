@@ -296,7 +296,7 @@ p { margin: 6px 0 14px; }
 .muted { color: var(--muted); }
 form, .actions { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
 label { display: grid; min-width: 0; max-width: 100%; gap: 5px; font-size: .92rem; font-weight: 650; }
-#couple-form label[hidden] { display: none; }
+#couple-form label[hidden], #share-target-label[hidden] { display: none; }
 input, select, button {
   max-width: 100%;
   min-height: 43px;
@@ -548,12 +548,24 @@ td button, .table :is(.money, .balance-chip, .state-chip) { white-space: normal;
 <div class="workspace-grid">
 <section id="account-balances" aria-labelledby="balances-title">
 <h3 id="balances-title">Saldos por bucket</h3>
-<h4 id="bank-accounts-title">Añadir cuenta bancaria</h4>
+<h4 id="bank-accounts-title">Gestionar cuentas bancarias</h4>
 <p id="bank-accounts-help" class="muted">Las cuentas que añadas aquí aparecen en los saldos y quedan disponibles para ingresos, gastos, transferencias, reportes y Finanzas de pareja.</p>
 <form id="bank-account-form" aria-labelledby="bank-accounts-title" aria-describedby="bank-accounts-help">
   <label>Nombre de la cuenta <input id="bank-account-name" maxlength="60" required></label>
   <button type="submit" id="bank-account-add">Añadir cuenta</button>
 </form>
+<details id="manage-bank" class="spaced">
+<summary>Cambiar nombre o eliminar una cuenta</summary>
+<form id="edit-bank" class="spaced">
+<label>Cuenta registrada <select id="bank-choice" required></select></label>
+<label>Nuevo nombre <input id="bank-new-name" maxlength="60" required></label>
+<button>Guardar nombre</button>
+</form>
+<div class="actions spaced">
+<label id="share-target-label" hidden>Pasar su porcentaje de reparto a <select id="share-target"></select></label>
+<button id="delete-bank" class="secondary" type="button">Eliminar cuenta</button>
+</div>
+</details>
 <p id="bank-account-status" class="muted" role="status"></p>
 <p id="bank-account-sync" class="muted" role="status" hidden></p>
 <p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
@@ -950,7 +962,7 @@ function coupleBudget(entries,month,reversed) {
 
 const accountKey = name => name.trim().normalize('NFKC').toLowerCase();
 function validateAccounts(names) {
-  if (!Array.isArray(names) || !baseAccounts.every((name,index) => names[index] === name)
+  if (!Array.isArray(names) || names.length < baseAccounts.length
       || names.some(name => typeof name !== 'string' || !name.trim() || name.length > 60)
       || new Set(names.map(accountKey)).size !== names.length) {
     throw Error('Los nombres de las cuentas deben ser válidos y únicos.');
@@ -1005,6 +1017,12 @@ function validate(data) {
     }
     return result;
   });
+  const removedAccounts = data.removedAccounts ?? [];
+  if (!Array.isArray(removedAccounts) || removedAccounts.length >= accounts.length
+      || new Set(removedAccounts).size !== removedAccounts.length
+      || !removedAccounts.every(i => boundedInt(i,0,accounts.length-1) && !data.rates[i] && !nextRates?.[i])) {
+    throw Error('Revisa las cuentas eliminadas y sus porcentajes de reparto.');
+  }
   const opening = Object.hasOwn(data,'opening') ? data.opening : accounts.map(() => 0);
   const expenses = Object.hasOwn(data,'expenses') ? data.expenses : [];
   if (!vector(opening,accounts.length,x => boundedInt(x,-maxIncome,maxIncome))
@@ -1031,7 +1049,7 @@ function validate(data) {
     }
     return {...(move.archived === true ? {archived:true} : {}),day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
-  return {version:1,accounts,provisional:data.provisional,nextRates,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
+  return {version:1,accounts,...(removedAccounts.length ? {removedAccounts} : {}),provisional:data.provisional,nextRates,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
     creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
     coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [],accounts.length),
     coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null,accounts.length)};
@@ -1044,10 +1062,12 @@ const pct = rate => (rate/100).toFixed(2).replace(/\.00$/,'') + ' %';
 const safe = value => String(value).replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const bucketLabel = index => {
   const category = state.purposes[index];
-  const name = safe(state.accounts[index]);
+  const name = safe(state.accounts[index])+(activeAccount(index) ? '' : ' (eliminada)');
   return category ? '<strong>'+safe(category)+'</strong><br><small class="muted">'+name+'</small>' : name;
 };
-const options = () => state.accounts.map((name,i) => '<option value="'+i+'">'+safe(name)+'</option>').join('');
+const activeAccount = index => !state.removedAccounts?.includes(index);
+const activeIndices = () => state.accounts.map((_,i) => i).filter(activeAccount);
+const options = (indices=activeIndices()) => indices.map(i => '<option value="'+i+'">'+safe(state.accounts[i])+'</option>').join('');
 const expenseOptions = (selected='') => ['',...expenseCategories].map(category =>
   '<option value="'+safe(category)+'"'+(category === selected ? ' selected' : '')+'>'+(category || 'Sin categoría')+'</option>').join('');
 function table(columns,rows) {
@@ -1244,7 +1264,7 @@ function renderPreview() {
   }
   const source = el('source').value === '' ? -1 : Number(el('source').value);
   const parts = allocate(amount,rates);
-  el('preview').innerHTML = '<h4>Vista previa del reparto</h4>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],state.accounts.map((_,index) => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+  el('preview').innerHTML = '<h4>Vista previa del reparto</h4>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],activeIndices().map(index => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
@@ -1312,8 +1332,8 @@ function renderExpenses() {
   el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría','Acción'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
 }
 function renderOpening() {
-  const rows = state.accounts.map((name,index) => row([safe(name),
-    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+safe(name)+'" value="'+(state.opening[index]/100).toFixed(2)+'">']));
+  const rows = activeIndices().map(index => { const name = state.accounts[index]; return row([safe(name),
+    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+safe(name)+'" value="'+(state.opening[index]/100).toFixed(2)+'">']); });
   el('opening-form').innerHTML = table(['Cuenta','Saldo inicial ($)'],rows)
     +'<button class="secondary spaced" id="save-opening" type="submit">Guardar saldos iniciales</button>';
   el('save-opening').disabled = !ready;
@@ -1499,7 +1519,7 @@ function renderCoupleBank(locations,preserve=false) {
       return '<option value="'+(account ?? '')+'">'+safe(coupleLocationName(account,label))+'</option>';
     }).join('') || '<option value="">Sin saldo para retirar</option>';
   } else {
-    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+state.accounts.map((_,account) => {
+    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+activeIndices().map(account => {
       const label = kind === 'deposit' && savings?.account === account ? savings.label : '';
       return '<option value="'+account+'">'+safe(coupleLocationName(account,label))+'</option>';
     }).join('');
@@ -1635,7 +1655,7 @@ function renderAccountOptions() {
     const selected = ready ? select.value : '';
     const placeholder = id === 'report-account' ? '<option value="">Todas las cuentas</option>'
       : '<option value="" disabled>Selecciona una cuenta</option>';
-    select.innerHTML = placeholder+accountOptions;
+    select.innerHTML = placeholder+(id === 'report-account' ? options(state.accounts.map((_,i) => i)) : accountOptions);
     select.value = [...select.options].some(option => option.value === selected) ? selected : '';
   }
 }
@@ -1650,7 +1670,12 @@ function render(openEntryIndex) {
   el('export').disabled = !ready;
   el('download-report').disabled = !ready;
   const {posted,expected} = balancesFor(state.entries,state.expenses,state.opening,state.manualTransfers);
-  el('balances').innerHTML = table(['Bucket','Saldo registrado','Saldo previsto'],state.accounts.map((_,index) => row([bucketLabel(index),balanceChip(posted[index],'posted'),balanceChip(expected[index],'forecast')])).concat(row(['<strong>Total</strong>',cash(sum(posted)),cash(sum(expected))])));
+  const balanceTable = indices => table(['Bucket','Saldo registrado','Saldo previsto'],indices.map(i =>
+    row([bucketLabel(i),balanceChip(posted[i],'posted'),balanceChip(expected[i],'forecast')])).concat(
+    row(['<strong>Total</strong>',cash(sum(indices.map(i => posted[i]))),cash(sum(indices.map(i => expected[i])))])));
+  el('balances').innerHTML = balanceTable(activeIndices())+(state.removedAccounts?.length
+    ? '<details><summary>Saldos de cuentas eliminadas</summary>'+balanceTable(state.removedAccounts)+'</details>' : '');
+  renderBankChoice();
   renderPreview();
   renderTransfers();
   renderManualTransfers();
@@ -1662,10 +1687,10 @@ function render(openEntryIndex) {
   renderCouple(false);
 }
 function renderSettings() {
-  const accountRows = state.accounts.map((name,index) => row([safe(name),
+  const accountRows = activeIndices().map(index => { const name = state.accounts[index]; return row([safe(name),
     '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje hasta el 27 de noviembre para '+safe(name)+'" value="'+(state.rates[index]/100)+'">',
     '<input class="next-rate" type="text" inputmode="decimal" size="6" aria-label="Porcentaje desde el 28 de noviembre para '+safe(name)+'" value="'+(state.nextRates ? state.nextRates[index]/100 : '')+'">',
-    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+safe(name)+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
+    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+safe(name)+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']); });
   el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Hasta el 27 nov 2026 (%)','Desde el 28 nov 2026 (%)','Categoría del bucket'],accountRows)
     +'<p id="rate-total" class="spaced" aria-live="polite"></p>'
     +'<p id="next-rate-total" aria-live="polite"></p>'
@@ -1675,10 +1700,15 @@ function renderSettings() {
   updateTotal();
 }
 const fields = selector => Array.from(el('configuration').querySelectorAll(selector));
-const readRates = () => fields('.rate').map(input => units(input.value));
+function accountValues(selector,read,inactive) {
+  const inputs = fields(selector);
+  let position = 0;
+  return state.accounts.map((_,index) => activeAccount(index) ? read(inputs[position++]) : inactive(index));
+}
+const readRates = () => accountValues('.rate',input => units(input.value),() => 0);
 function readNextRates() {
   const values = fields('.next-rate').map(input => input.value.trim());
-  return values.some(Boolean) ? values.map(value => value ? units(value) : 0) : null;
+  return values.some(Boolean) ? accountValues('.next-rate',input => units(input.value.trim() || '0'),() => 0) : null;
 }
 function updateTotal() {
   const rates = readRates();
@@ -1828,6 +1858,71 @@ el('card-history').addEventListener('click',event => {
   saveCards(creditCards,'Movimiento de tarjeta eliminado.');
 });
 
+function renderBankChoice() {
+  const select = el('bank-choice');
+  const previous = select.value;
+  select.innerHTML = '<option value="">Selecciona una cuenta</option>'+options();
+  select.value = ready && [...select.options].some(o => o.value === previous) ? previous : '';
+  updateBankFields();
+}
+function updateBankFields() {
+  const value = el('bank-choice').value;
+  const index = Number(value);
+  const chosen = value !== '' && ready && activeAccount(index);
+  el('bank-new-name').value = chosen ? state.accounts[index] : '';
+  const needsTarget = chosen && (state.rates[index] > 0 || state.nextRates?.[index] > 0);
+  el('share-target-label').hidden = !needsTarget;
+  el('share-target').innerHTML = '<option value="">Escoge una cuenta</option>'+options(activeIndices().filter(i => i !== index));
+  el('delete-bank').disabled = !chosen;
+}
+function finishBankEdit(next,message) {
+  bankAccountSync = el('bank-account-sync');
+  if (!save(next)) return;
+  el('bank-choice').value = '';
+  renderSettings();
+  renderOpening();
+  render();
+  el('bank-account-status').textContent = message;
+}
+el('bank-choice').addEventListener('change',updateBankFields);
+el('edit-bank').addEventListener('submit',event => {
+  event.preventDefault();
+  if (!el('bank-choice').value) return;
+  const index = Number(el('bank-choice').value);
+  const name = el('bank-new-name').value.trim();
+  if (!name || state.accounts.some((old,i) => i !== index && accountKey(old) === accountKey(name))) {
+    el('bank-account-status').textContent = 'Escribe un nombre único de hasta 60 caracteres.';
+    return;
+  }
+  const accounts = state.accounts.map((old,i) => i === index ? name : old);
+  const coupleFinances = state.coupleFinances.map(entry => entry.kind === 'contribution' && entry.account === state.accounts[index]
+    ? {...entry,account:name} : entry);
+  finishBankEdit({...state,accounts,coupleFinances},'Nombre guardado: '+name+'.');
+});
+el('delete-bank').addEventListener('click',() => {
+  if (!el('bank-choice').value) return;
+  const index = Number(el('bank-choice').value);
+  const name = state.accounts[index];
+  const status = el('bank-account-status');
+  if (activeIndices().length === 1) {
+    status.textContent = 'Añade otra cuenta antes de eliminar la última cuenta activa.';
+    return;
+  }
+  const needsTarget = state.rates[index] > 0 || state.nextRates?.[index] > 0;
+  const target = el('share-target').value === '' ? null : Number(el('share-target').value);
+  if (needsTarget && (target === null || target === index || !activeAccount(target))) {
+    status.textContent = 'Escoge la cuenta que recibirá su porcentaje para los próximos ingresos.';
+    el('share-target').focus();
+    return;
+  }
+  const detail = needsTarget ? ' Su porcentaje para futuros ingresos pasará a '+state.accounts[target]+'.' : '';
+  if (!confirm('¿Eliminar «'+name+'» de las cuentas activas? Se conservarán sus saldos e historial.'+detail)) return;
+  const redistribute = rates => rates && rates.map((r,i) => i === index ? 0 : i === target ? r+rates[index] : r);
+  finishBankEdit({...state,removedAccounts:[...(state.removedAccounts ?? []),index],rates:redistribute(state.rates),
+    nextRates:redistribute(state.nextRates),coupleSavings:state.coupleSavings?.account === index ? null : state.coupleSavings},
+    'Cuenta eliminada. Puedes consultar sus registros en el historial.');
+});
+
 el('bank-account-form').addEventListener('submit',event => {
   event.preventDefault();
   const field = el('bank-account-name');
@@ -1839,7 +1934,7 @@ el('bank-account-form').addEventListener('submit',event => {
   }
   const key = accountKey(name);
   if (state.accounts.some(account => accountKey(account) === key)) {
-    status.textContent = 'Ya existe una cuenta con ese nombre. Puedes verla en la tabla de saldos.';
+    status.textContent = 'Ese nombre ya pertenece a una cuenta activa o eliminada.';
     return;
   }
   bankAccountSync = el('bank-account-sync');
@@ -1940,6 +2035,7 @@ el('expense').addEventListener('submit',event => {
 el('opening-form').addEventListener('submit',event => {
   event.preventDefault();
   const opening = state.accounts.map((_,index) => {
+    if (!activeAccount(index)) return state.opening[index];
     const value = el('opening-'+index).value.trim();
     return value.startsWith('-') ? -units(value.slice(1)) : units(value || '0');
   });
@@ -2081,7 +2177,12 @@ el('configuration').addEventListener('input',event => {
 });
 el('configuration').addEventListener('click',event => {
   if (event.target.id !== 'load-travel-plan') return;
-  fields('.rate').forEach((input,index) => { input.value = String((travelPlanRates[index] ?? 0)/100); });
+  const active = activeIndices();
+  if (travelPlanRates.some((rate,i) => rate && !activeAccount(i))) {
+    say('Este plan incluye una cuenta eliminada. Ajusta los porcentajes de tus cuentas activas.',true);
+    return;
+  }
+  fields('.rate').forEach((input,index) => { input.value = String((travelPlanRates[active[index]] ?? 0)/100); });
   updateTotal();
   say('Plan temporal cargado en la columna hasta el 27 de noviembre. Pulsa Guardar configuración para aplicarlo.');
 });
@@ -2097,7 +2198,7 @@ el('configuration').addEventListener('submit',event => {
     say('El reparto desde el 28 de noviembre debe sumar exactamente 100 %.',true);
     return;
   }
-  const purposes = fields('.purpose').map(input => input.value.trim());
+  const purposes = accountValues('.purpose',input => input.value.trim(),index => state.purposes[index]);
   const provisional = state.provisional && rates.every((rate,index) => rate === state.rates[index]);
   if (save({...state,rates,nextRates,purposes,provisional})) {
     render();
@@ -2303,5 +2404,6 @@ window.addEventListener('beforeunload',event => {
 </script>
 </body>
 </html>
+
 
 
