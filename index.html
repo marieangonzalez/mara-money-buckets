@@ -3,7 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Mara Money Buckets</title>
+<title>Money Smart Buckets</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&amp;display=swap">
 <style>
 @font-face {
   font-family: "Mara Shooting Star";
@@ -21,10 +22,11 @@
   --surface: #fffaff;
   --pale: #f9eafa;
   --display: Georgia, "Times New Roman", serif;
-  --sticker-font: "Mara Uploaded Font", "Mara Shooting Star", "Shooting Star - personal use", var(--display);
+  --sticker-font: "Mara Uploaded Font", "DynaPuff", "Mara Shooting Star", "Shooting Star - personal use", var(--display);
   --body-font: "Segoe UI", system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
+h1, h2, h3, h4 { text-transform: capitalize; }
 body {
   margin: 0;
   background: radial-gradient(circle, #eccce9 1px, transparent 1.4px) 0 0 / 18px 18px, #fff4fb;
@@ -61,13 +63,13 @@ header::after {
   mix-blend-mode: soft-light;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='paper'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.58' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23paper)'/%3E%3C/svg%3E");
 }
-.hero, main, .quick-links { max-width: 1380px; margin: auto; }
+.hero, main, .quick-menu { max-width: 1380px; margin: auto; }
 .hero {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(215px, 44%);
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 38%);
   align-items: center;
   gap: 22px;
-  padding: 48px 26px 42px;
+  padding: 24px clamp(16px, 3vw, 28px);
 }
 .hero-tag {
   display: flex;
@@ -88,7 +90,6 @@ header::after {
   transform: rotate(45deg);
   content: "";
 }
-h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
 .brand {
   display: flex;
   justify-content: flex-start;
@@ -99,7 +100,7 @@ h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
   margin: 0;
   padding: .04em 0 .10em;
   color: #ffd2eb;
-  font: 400 clamp(2.45rem, 6.8vw, 6.3rem)/1.15 var(--sticker-font);
+  font: 400 clamp(2.15rem, 5.1vw, 4.55rem)/1.15 var(--sticker-font);
   letter-spacing: -.035em;
   paint-order: stroke fill;
   -webkit-text-stroke: clamp(2px, .042em, 4px) #50226b;
@@ -131,47 +132,171 @@ h2 { font-family: var(--display); font-weight: 500; letter-spacing: -.025em; }
   clip-path: polygon(50% 0, 61% 38%, 100% 50%, 61% 62%, 50% 100%, 39% 62%, 0 50%, 39% 38%);
   content: "";
 }
-.hero-description { max-width: 500px; margin: 17px 0 0; color: #44234f; }
-.hero-art { justify-self: end; display: block; width: min(100%, 570px); height: auto; }
-.nav-bar { border-bottom: 1px solid var(--line); background: #fff8fa; }
-.quick-links { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 24px; }
-.quick-links a {
-  padding: 7px 12px;
-  border-radius: 100px;
-  color: var(--purple);
-  font-size: .9rem;
-  font-weight: 650;
-  text-decoration: none;
+.hero-art { justify-self: end; display: block; width: min(100%, 450px); height: auto; }
+html { scroll-padding-top: 58px; }
+.nav-bar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 1px solid var(--line);
+  background: #fff8fa;
 }
-.quick-links a:hover { background: var(--pale); }
+.quick-menu { position: relative; padding: 7px clamp(12px, 3vw, 28px); }
+.quick-menu > summary {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 13px;
+  border: 1px solid #d2abdc;
+  border-radius: 100px;
+  background: #f6e9fb;
+  color: #59266c;
+  box-shadow: 0 2px 0 #e2bee7;
+  font: 400 1.05rem/1.2 var(--sticker-font);
+  list-style: none;
+}
+.quick-menu > summary::-webkit-details-marker { display: none; }
+.quick-menu > summary::after {
+  width: .48em;
+  height: .48em;
+  border: solid currentColor;
+  border-width: 0 2px 2px 0;
+  content: "";
+  transform: translateY(-.12em) rotate(45deg);
+}
+.quick-menu[open] > summary::after { transform: translateY(.12em) rotate(225deg); }
+.quick-menu > summary:hover { background: #efd9f5; }
+.quick-current {
+  color: var(--muted);
+  font: 650 .79rem/1.25 var(--body-font);
+}
+.quick-links {
+  position: absolute;
+  inset: calc(100% + 5px) auto auto clamp(12px, 3vw, 28px);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  width: min(515px, calc(100% - 24px));
+  max-height: min(70vh, 480px);
+  overflow: auto;
+  padding: 13px;
+  border: 1px solid #e3c8e8;
+  border-radius: 16px;
+  background: #fffaff;
+  box-shadow: 0 8px 25px #48204732;
+}
+.quick-menu:not([open]) .quick-links { display: none; }
+.quick-links a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 39px;
+  padding: 5px 11px;
+  border: 1px solid var(--link-edge, #e7adcf);
+  border-radius: 100px;
+  background: var(--link-fill, #fce0f1);
+  color: var(--link-ink, #752353);
+  box-shadow: 0 2px 0 var(--link-edge, #e7adcf);
+  font: 400 1.02rem/1.2 var(--sticker-font);
+  text-align: center;
+  text-decoration: none;
+  transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+.quick-links a:nth-child(3n+2) { --link-fill: #ede1ff; --link-edge: #c6a8e8; --link-ink: #59267d; }
+.quick-links a:nth-child(3n) { --link-fill: #eef5bd; --link-edge: #c5d389; --link-ink: #485020; }
+.quick-links a:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 0 var(--link-edge, #e7adcf), 0 6px 9px #57275925;
+}
+.quick-links a[aria-current="location"] {
+  border-color: #753c84;
+  background: #693578;
+  color: #fff;
+  box-shadow: 0 2px 0 #462251;
+}
+.quick-links a:active { transform: translateY(1px); box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+  .quick-links a { transition: none; }
+}
+
 main {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  align-items: start;
-  gap: 32px 18px;
-  padding: 34px 20px 48px;
+  gap: 30px;
+  padding: clamp(20px, 4vw, 42px) clamp(12px, 3vw, 28px) 44px;
 }
-#status { grid-column: 1 / -1; z-index: 1; }
-@media (max-width: 760px) {
-  main { grid-template-columns: minmax(0, 1fr); }
+.workspace-group { min-width: 0; }
+main :is(h2,h3,h4) {
+  paint-order: stroke fill;
+  -webkit-text-stroke: var(--heading-outline, 2px) #fff;
 }
-section, details {
+.workspace-group > h2 {
+  --heading-outline: 3px;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #dcb9df;
+  color: #542060;
+  font: 600 clamp(1.5rem, 2.7vw, 2.2rem)/1.22 var(--display);
+  text-shadow: 0 1px 0 #fff, 0 2px 0 #ddb1e5, 0 4px 7px #65327655;
+}
+.workspace-grid, .entry-grid { display: grid; min-width: 0; gap: 16px; }
+.entry-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+@media (min-width: 1080px) {
+  #special-accounts-title + .workspace-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+  }
+  #tracking-title + .workspace-grid, #preferences-title + .workspace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+  #financial-analysis, #report-section, #settings[open], #backup-section[open] { grid-column: 1 / -1; }
+}
+.workspace-grid > section, .workspace-grid > details, .entry-grid > section, #cloud-access {
+  box-shadow: 0 3px 0 #eccded, 0 8px 20px #4e254710;
+}
+main :is(section, h2, h3, h4, details)[id] { scroll-margin-top: 14px; }
+#status { z-index: 1; }
+.workspace-grid :is(section, details), #cloud-access {
   min-width: 0;
-  padding: 22px;
+  padding: clamp(14px, 2.4vw, 24px);
   border: 1px solid var(--line);
-  border-radius: 17px;
+  border-radius: 16px;
   background: var(--surface);
 }
-main > section, main > details { box-shadow: 0 4px 18px #4e25470a; scroll-margin-top: 14px; }
-#income { border-top: 4px solid #e04ba6; }
-h2 { margin: 0 0 8px; font-size: clamp(1.55rem, 4vw, 2.05rem); line-height: 1.12; }
-h3 { margin: 18px 0 5px; font: 400 1rem/1.4 var(--display); }
+.workspace-grid > details > summary { text-align: center; }
+.workspace-grid > details[open] > summary { margin-bottom: 14px; }
+.workspace-grid section > h3:first-child, #cloud-title { display: table; margin-inline: auto; }
+.workspace-grid > details > summary h3 { display: inline-block; vertical-align: middle; }
+.workspace-grid section > h3:first-child, .workspace-grid > details > summary h3, #cloud-title {
+  --heading-outline: clamp(4px, .19em, 6px);
+  margin-block: 0 15px;
+  max-width: 100%;
+  padding: .15em .46em .23em;
+  border: 3px solid #fff;
+  border-radius: 10px;
+  background: var(--heading-fill, #fff0f8);
+  box-shadow: 0 0 0 1px var(--heading-edge, #e7b6db),
+    2px 4px 0 var(--heading-edge, #e7b6db), 3px 7px 10px #5c235a30;
+  color: #391847;
+  font: 400 clamp(1.27rem, 2.25vw, 1.72rem)/1.24 var(--sticker-font);
+  text-align: center;
+  text-shadow: 0 1px 0 #b878bb, 0 2px 0 #a56aaa, 1px 3px 1px #70407888,
+    1px 5px 7px #43204c66;
+  overflow-wrap: anywhere;
+}
+.workspace-grid h4 {
+  margin: 18px 0 6px;
+  color: #542060;
+  font: 600 clamp(1.01rem, 1.45vw, 1.18rem)/1.35 var(--display);
+  text-shadow: 0 1px 0 #ead0ec, 0 3px 5px #67317442;
+}
 summary { cursor: pointer; font-weight: 750; color: var(--purple); }
-summary h2 { display: inline; }
 p { margin: 6px 0 14px; }
 .muted { color: var(--muted); }
 form, .actions { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; }
-label { display: grid; gap: 5px; font-size: .92rem; font-weight: 650; }
+label { display: grid; min-width: 0; max-width: 100%; gap: 5px; font-size: .92rem; font-weight: 650; }
+#couple-form label[hidden], #share-target-label[hidden] { display: none; }
 input, select, button {
   max-width: 100%;
   min-height: 43px;
@@ -187,7 +312,7 @@ button.secondary { border-color: #dcc3d5; background: var(--pale); color: var(--
 button.secondary:hover:enabled { background: #f0dce8; }
 button:disabled { opacity: .52; cursor: default; }
 :where(a,button,input,select,summary):focus-visible { outline: 3px solid #9b36a4; outline-offset: 2px; }
-.table { overflow: auto; }
+.table { container-type: inline-size; min-width: 0; }
 table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 th, td { padding: 9px 11px; border-bottom: 1px solid var(--line); vertical-align: middle; text-align: left; }
 th { background: var(--pale); color: var(--purple); font-size: .84rem; }
@@ -202,28 +327,31 @@ td button, .money { white-space: nowrap; }
 #status:empty { display: none; }
 #status { position: sticky; bottom: 8px; margin: 0; border: 1px solid var(--line); background: #fffaff; box-shadow: 0 3px 12px #451e3d24; }
 #settings table input[type=text] { width: 100%; min-width: 130px; }
+@media (max-width: 780px) {
+  .entry-grid { grid-template-columns: minmax(0, 1fr); }
+}
 @media (max-width: 620px) {
-  .hero { grid-template-columns: minmax(0, 1fr); padding: 29px 18px 26px; gap: 10px; }
-  .hero-art { width: min(100%, 400px); justify-self: center; }
-  .quick-links { padding-inline: 10px; }
-  main { padding: 26px 10px 34px; }
-  section, details { padding: 14px; }
+  .hero { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .hero-art { display: none; }
+  .quick-links { grid-template-columns: repeat(2, minmax(0, 1fr)); width: min(360px, calc(100% - 24px)); }
+  .quick-links a { padding: 5px 8px; }
+  main { gap: 24px; }
   th, td { padding: 7px 8px; }
+}
+@media (max-width: 480px) {
+  form label { flex: 1 0 100%; }
+  #amount, #expense-amount { width: 100%; }
 }
 
 /* Candy colors and sticker details */
 .hero { position: relative; }
-.hero-art { filter: drop-shadow(0 8px 12px #250d3c55); }
-.quick-links a:nth-child(3n+1) { background: #fce0f1; }
-.quick-links a:nth-child(3n+2) { background: #ede1ff; color: #59267d; }
-.quick-links a:nth-child(3n) { background: #eef5bd; color: #485020; }
-.quick-links a:hover { text-decoration: underline; text-underline-offset: 3px; }
-main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e25470a; }
 #income { border-top: 4px solid #e04ba6; }
 #moves { border-top: 4px solid #9e67de; }
 #spending { border-top: 4px solid #afc94d; }
+#spending, #financial-analysis { --heading-fill: #f5fadf; --heading-edge: #c5d982; }
+#moves, #history-section, #settings, #cloud-access { --heading-fill: #f6edff; --heading-edge: #c9abea; }
 
-#financial-analysis { grid-column: 1 / -1; }
+#card-form { margin-top: 12px; }
 .analysis-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
 .analysis-metrics > div { padding: 10px 13px; border-radius: 11px; background: var(--pale); }
 .analysis-metrics dt { color: var(--muted); font-size: .9rem; }
@@ -236,30 +364,6 @@ main > section, main > details { box-shadow: 0 5px 0 #eccded, 0 8px 20px #4e2547
 .category-chart li:nth-child(3n+2) .category-fill { background: #9356ce; }
 .category-chart li:nth-child(3n) .category-fill { background: #7c9829; }
 
-main > section > h2, main > details > summary > h2 {
-  margin: 0 0 12px;
-  max-width: 100%;
-  padding: .16em .45em .22em;
-  border: 3px solid #fff;
-  border-radius: 10px;
-  background: var(--title-plate, #fff0f8);
-  color: #391847;
-  box-shadow: 0 0 0 1px var(--title-shadow, #edb9df), 2px 4px 0 var(--title-shadow, #edb9df),
-    3px 7px 10px #5c235a28;
-  font: 400 clamp(1.35rem, 3.1vw, 1.75rem)/1.2 var(--sticker-font);
-  text-transform: capitalize;
-  letter-spacing: .01em;
-  paint-order: stroke fill;
-  -webkit-text-stroke: clamp(4px, .19em, 6px) #fff;
-}
-main > section > h2 { display: table; margin-top: -34px; margin-inline: auto; text-align: center; }
-main > details > summary { margin-top: -34px; text-align: center; }
-main > details > summary > h2 { vertical-align: middle; }
-#spending, #financial-analysis { --title-shadow: #c5d982; --title-plate: #f5fadf; }
-#moves, #history-section, #settings { --title-shadow: #c9abea; --title-plate: #f6edff; }
-@media (max-width: 620px) {
-  main > section > h2, main > details > summary { margin-top: -25px; }
-}
 
 .state-chip, .balance-chip {
   display: inline-block;
@@ -281,12 +385,45 @@ main > details > summary > h2 { vertical-align: middle; }
 
 
 /* Cloud sign-in */
-#cloud-access { grid-column: 1 / -1; border-top: 4px solid #9e67de; }
+#cloud-access { border-top: 4px solid #9e67de; }
 #cloud-access form { margin-top: 12px; }
 #cloud-access input { width: min(100%, 340px); }
 #cloud-access .cloud-message { font-weight: 650; }
 body.cloud-locked main > :not(#cloud-access):not(#status) { display:none !important; }
-body.cloud-locked .quick-links { display:none; }
+body.cloud-locked .nav-bar { display:none; }
+
+.field-caption { display: none; }
+.table table { table-layout: fixed; }
+.table :is(th, td, button), .field-value { overflow-wrap: anywhere; }
+.field-value, .entries > * { min-width: 0; }
+td button, .table :is(.money, .balance-chip, .state-chip) { white-space: normal; }
+#settings table input[type=text] { min-width: 0; }
+@container (max-width: 60rem) {
+  .table table, .table tbody { display: block; }
+  .table thead {
+    position: absolute; width: 1px; height: 1px; overflow: hidden;
+    clip-path: inset(50%); white-space: nowrap;
+  }
+  .table tbody > tr {
+    display: block; margin-block: 8px; padding: 3px 10px;
+    border: 1px solid var(--line); border-radius: 10px;
+  }
+  .table td {
+    display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
+    align-items: center; gap: 8px; padding: 6px 0;
+  }
+  .table td:last-child { border-bottom: 0; }
+  .field-caption { display: block; color: var(--muted); font-weight: 650; }
+  .field-value :is(input, select) { max-width: 100%; min-width: 0; }
+}
+@container (max-width: 18rem) {
+  .table td { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+}
+@media (max-width: 620px) {
+  main { padding-inline: 8px; }
+  .workspace-grid :is(section, details), #cloud-access { padding-inline: 10px; }
+  .entries { grid-template-columns: minmax(0, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -294,51 +431,102 @@ body.cloud-locked .quick-links { display:none; }
 <div class="hero">
   <div>
     <p class="hero-tag">Tu registro financiero</p>
-    <h1 class="brand"><span>Mara</span> <span>Money</span> <span>Buckets</span></h1>
-    <p class="hero-description">Registra lo que cobras, reparte el dinero entre tus cuentas y lleva tus gastos al día.</p>
+    <h1 class="brand"><span>Money</span> <span>Smart</span> <span>Buckets</span></h1>
   </div>
   <svg class="hero-art" viewBox="0 0 340 220" aria-hidden="true" focusable="false">
-    <ellipse cx="184" cy="109" rx="132" ry="91" fill="none" stroke="#e1a9c4" stroke-opacity=".34"/>
-    <circle cx="187" cy="109" r="81" fill="#f8cadc" fill-opacity=".09"/>
-    <path d="M266 177c-8-11-22-1 0 15 22-16 8-26 0-15Z" fill="#ff96d6" stroke="#fff0fa" stroke-width="1.4"/>
-    <path d="m126 25 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#effb9b"/>
-    <circle cx="299" cy="83" r="4" fill="#effb9b"/>
-    <circle cx="63" cy="139" r="3.5" fill="#e2b5ff"/>
-    <path d="M56 88v22m-11-11h22M280 31v32m-16-16h32M309 143v21m-10-10h20M94 173v24m-12-12h24" stroke="#ffc0e6" stroke-width="2" stroke-linecap="round"/>
-    <g transform="rotate(-12 151 100)">
-      <rect x="83" y="55" width="144" height="93" rx="15" fill="#ff79c7"/>
-      <rect x="100" y="72" width="25" height="17" rx="4" fill="#722382"/>
-      <path d="M101 119h53m-53 9h30" stroke="#722382" stroke-width="3" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="hero-pink-card" x2="1" y2="1">
+        <stop stop-color="#ffd2ea"/><stop offset=".41" stop-color="#ed70b3"/><stop offset="1" stop-color="#9a3d8a"/>
+      </linearGradient>
+      <linearGradient id="hero-purple-card" x2=".88" y2="1">
+        <stop stop-color="#fff2ff"/><stop offset=".44" stop-color="#d6abea"/><stop offset="1" stop-color="#9871ba"/>
+      </linearGradient>
+      <linearGradient id="hero-chip-metal" x2="1" y2="1">
+        <stop stop-color="#a77838"/><stop offset=".27" stop-color="#fff1b0"/>
+        <stop offset=".57" stop-color="#d8b268"/><stop offset=".77" stop-color="#f9dfa2"/><stop offset="1" stop-color="#ad7a3a"/>
+      </linearGradient>
+      <radialGradient id="hero-coin-face" cx=".35" cy=".24" r=".8">
+        <stop stop-color="#fff5bd"/><stop offset=".6" stop-color="#efcd77"/><stop offset="1" stop-color="#b68034"/>
+      </radialGradient>
+      <linearGradient id="hero-coin-edge" x2="1" y2="0">
+        <stop stop-color="#9a652c"/><stop offset=".38" stop-color="#ebc877"/><stop offset=".73" stop-color="#c38a40"/><stop offset="1" stop-color="#925725"/>
+      </linearGradient>
+      <pattern id="hero-card-grain" width="4" height="4" patternUnits="userSpaceOnUse">
+        <path d="M0 1h4M0 3h4" stroke="#fff" stroke-width=".4" stroke-opacity=".22"/>
+      </pattern>
+      <filter id="hero-object-shadow" x="-30%" y="-35%" width="165%" height="180%">
+        <feDropShadow dx="1" dy="5" stdDeviation="5" flood-color="#52204f" flood-opacity=".35"/>
+      </filter>
+      <g id="hero-card-chip">
+        <rect width="27" height="20" rx="4" fill="url(#hero-chip-metal)" stroke="#996b3d" stroke-width=".65"/>
+        <path d="M0 6h6l4 4-4 4H0m27-8h-6l-4 4 4 4h6M10 0v20M17 0v20" fill="none" stroke="#8b603a" stroke-width=".7"/>
+        <path d="M3 3h21" stroke="#fff4c9" stroke-linecap="round" opacity=".72"/>
+      </g>
+      <g id="hero-stacked-coin">
+        <path d="M-18 0v4c0 4 8 7 18 7s18-3 18-7V0Z" fill="url(#hero-coin-edge)" stroke="#92602c" stroke-width=".75"/>
+        <path d="M-14 6v2m4-1v2m4-1v2m4-1v2m4-2v2m4-3v2m4-3v2m4-3v2" stroke="#815023" stroke-width=".6" opacity=".55"/>
+        <ellipse rx="18" ry="7" fill="url(#hero-coin-face)" stroke="#a77133" stroke-width=".8"/>
+        <ellipse rx="13.8" ry="4.7" fill="none" stroke="#ae7735" stroke-width=".65"/>
+        <path d="M-12-3q10-5 22-1" fill="none" stroke="#fff2bd" stroke-width=".85" stroke-linecap="round"/>
+      </g>
+    </defs>
+    <ellipse cx="184" cy="112" rx="132" ry="90" fill="none" stroke="#c892b8" opacity=".28"/>
+    <path d="m123 29 3 8 8 3-8 3-3 8-3-8-8-3 8-3Z" fill="#fff4c7"/>
+    <circle cx="294" cy="75" r="3.4" fill="#f9eca6"/>
+    <path d="M57 87v18m-9-9h18M282 27v22m-11-11h22" stroke="#ffe7f6" stroke-width="1.5" stroke-linecap="round"/>
+    <g filter="url(#hero-object-shadow)" transform="rotate(-13 145 102)">
+      <rect x="69" y="55" width="151" height="95" rx="12" fill="#934079"/>
+      <rect x="69" y="53" width="151" height="94" rx="12" fill="url(#hero-pink-card)" stroke="#ffc5e5" stroke-width=".8"/>
+      <rect x="70" y="54" width="149" height="92" rx="11" fill="url(#hero-card-grain)"/>
+      <path d="M77 66q-1-5 6-7h122" fill="none" stroke="#fff4fa" stroke-opacity=".62"/>
+      <path d="M179 65q10 11 31 12m-44-12q14 20 44 23m-54-22q15 27 54 32" fill="none" stroke="#ffe4f3" stroke-opacity=".34"/>
+      <use href="#hero-card-chip" x="83" y="75"/>
+      <path d="M86 117h24m-24 8h39" stroke="#722751" stroke-opacity=".69" stroke-width="2.3" stroke-linecap="round"/>
     </g>
-    <g transform="rotate(13 206 129)">
-      <rect x="139" y="85" width="139" height="92" rx="15" fill="#f1d7ff"/>
-      <path d="M140 113h137" stroke="#9b58cc" stroke-width="13"/>
-      <path d="M154 149h40m-40 9h25" stroke="#672085" stroke-width="3" stroke-linecap="round"/>
-      <circle cx="252" cy="151" r="10" fill="#ff79c7"/>
-      <circle cx="240" cy="151" r="10" fill="#b45cf0" fill-opacity=".75"/>
+    <g filter="url(#hero-object-shadow)" transform="rotate(13 208 128)">
+      <rect x="127" y="84" width="164" height="101" rx="13" fill="#77508c"/>
+      <rect x="127" y="81" width="164" height="101" rx="13" fill="url(#hero-purple-card)" stroke="#fce7ff" stroke-width=".9"/>
+      <rect x="128" y="82" width="162" height="99" rx="12" fill="url(#hero-card-grain)"/>
+      <path d="M134 95q1-8 11-8h131" fill="none" stroke="#fff" stroke-opacity=".62"/>
+      <path d="M179 177q26-49 103-68m-113 67q29-60 113-76m-122 77q34-68 116-84" fill="none" stroke="#fff6ff" stroke-opacity=".25"/>
+      <use href="#hero-card-chip" x="142" y="103"/>
+      <path d="M178 109q3 4 0 8m4-11q5 7 0 14m4-17q7 10 0 20" fill="none" stroke="#593771" stroke-width="1.3" stroke-linecap="round"/>
+      <path d="M144 143h14m9 0h14m9 0h14m9 0h14" stroke="#f8eafa" stroke-width="2.3" stroke-linecap="round"/>
+      <path d="M144 143h14m9 0h14m9 0h14m9 0h14" stroke="#5a376d" stroke-width="1.6" stroke-linecap="round" transform="translate(0 -.8)"/>
+      <path d="M143 159h33m-33 5h22" stroke="#5e3d74" stroke-width="1.3" stroke-opacity=".75" stroke-linecap="round"/>
+      <circle cx="254" cy="157" r="9" fill="#7652aa"/><circle cx="265" cy="157" r="9" fill="#e778b2" fill-opacity=".86"/>
     </g>
-    <circle cx="119" cy="160" r="23" fill="#effb9b"/>
-    <circle cx="119" cy="160" r="17" fill="none" stroke="#897e34"/>
-    <path d="M124 153h-7a3.5 3.5 0 0 0 0 7h4a3.5 3.5 0 0 1 0 7h-8m6-17v20" fill="none" stroke="#5c501d" stroke-width="1.8" stroke-linecap="round"/>
-    <g transform="translate(306 179) rotate(8)" stroke="#82713b" stroke-width="1.4">
-      <path d="M-18 0v18c0 4 8 7 18 7s18-3 18-7V0Z" fill="#e2bd66"/>
-      <path d="M-18 8c0 4 8 7 18 7s18-3 18-7M-18 14c0 4 8 7 18 7s18-3 18-7" fill="none"/>
-      <ellipse rx="18" ry="7" fill="#f5ef9c"/>
-      <ellipse rx="12" ry="4" fill="none" stroke="#a38843"/>
+    <g filter="url(#hero-object-shadow)" transform="translate(109 160) rotate(-11)">
+      <circle cx="1.9" cy="1.7" r="23" fill="url(#hero-coin-edge)" stroke="#97602c"/>
+      <circle r="22.8" fill="url(#hero-coin-face)" stroke="#fff0b8" stroke-width=".9"/>
+      <circle r="19.6" fill="none" stroke="#9c652e" stroke-width="1.2" stroke-dasharray="1 1.45"/>
+      <circle r="16.9" fill="none" stroke="#bb813d" stroke-width=".8"/>
+      <path d="M5-7h-8a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7h-8M0-11v22" fill="none" stroke="#fff0b7" stroke-width="2.4" stroke-linecap="round" transform="translate(0 1)"/>
+      <path d="M5-7h-8a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7h-8M0-11v22" fill="none" stroke="#845023" stroke-width="1.8" stroke-linecap="round"/>
+    </g>
+    <g filter="url(#hero-object-shadow)" transform="translate(299 178) rotate(8)">
+      <use href="#hero-stacked-coin" y="9"/><use href="#hero-stacked-coin" y="4"/><use href="#hero-stacked-coin" y="-1"/>
     </g>
   </svg>
 </div>
 </header>
 <div class="nav-bar">
+<details id="quick-menu" class="quick-menu">
+<summary>Menú de secciones <span id="quick-current" class="quick-current" aria-hidden="true"></span></summary>
 <nav class="quick-links" aria-label="Accesos rápidos">
+  <a href="#account-balances">Saldos</a>
   <a href="#income">Ingresos</a>
   <a href="#spending">Gastos</a>
   <a href="#moves">Transferencias</a>
-  <a href="#account-balances">Saldos</a>
+  <a href="#credit-cards">Tarjetas</a>
+  <a href="#couple-finances">Finanzas de pareja</a>
   <a href="#history-section">Historial</a>
   <a href="#projection-title">Análisis</a>
   <a href="#report-title">Reportes</a>
+  <a href="#settings">Reparto</a>
+  <a href="#backup-section">Respaldo y sesión</a>
 </nav>
+</details>
 </div>
 <main>
 <section id="cloud-access" aria-labelledby="cloud-title">
@@ -354,18 +542,46 @@ body.cloud-locked .quick-links { display:none; }
   </form>
   <p class="muted">Si confirmas tu correo por email, regresa a esta página para iniciar sesión.</p>
 </div>
-<div id="cloud-logged" hidden>
-  <p id="cloud-user" class="muted"></p>
-  <div class="actions">
-    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
-    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
-  </div>
-  <p class="muted">Al iniciar por primera vez, usa «Respaldo y recuperación» para importar el JSON que descargaste. Nunca se importa automáticamente el historial anterior.</p>
-</div>
 </section>
+<section class="workspace-group" aria-labelledby="operations-title">
+<h2 id="operations-title">Cuentas y movimientos</h2>
+<div class="workspace-grid">
+<section id="account-balances" aria-labelledby="balances-title">
+<h3 id="balances-title">Saldos por bucket</h3>
+<h4 id="bank-accounts-title">Gestionar cuentas bancarias</h4>
+<p id="bank-accounts-help" class="muted">Las cuentas que añadas aquí aparecen en los saldos y quedan disponibles para ingresos, gastos, transferencias, reportes y Finanzas de pareja.</p>
+<form id="bank-account-form" aria-labelledby="bank-accounts-title" aria-describedby="bank-accounts-help">
+  <label>Nombre de la cuenta <input id="bank-account-name" maxlength="60" required></label>
+  <button type="submit" id="bank-account-add">Añadir cuenta</button>
+</form>
+<details id="manage-bank" class="spaced">
+<summary>Cambiar nombre o eliminar una cuenta</summary>
+<form id="edit-bank" class="spaced">
+<label>Cuenta registrada <select id="bank-choice" required></select></label>
+<label>Nuevo nombre <input id="bank-new-name" maxlength="60" required></label>
+<button>Guardar nombre</button>
+</form>
+<div class="actions spaced">
+<label id="share-target-label" hidden>Pasar su porcentaje de reparto a <select id="share-target"></select></label>
+<button id="delete-bank" class="secondary" type="button">Eliminar cuenta</button>
+</div>
+</details>
+<p id="bank-account-status" class="muted" role="status"></p>
+<p id="bank-account-sync" class="muted" role="status" hidden></p>
+<p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
+<div id="balances"></div>
+<button type="button" class="secondary spaced" id="reset-balances" disabled>Restablecer balances a $0</button>
+<details class="spaced">
+<summary>Saldos iniciales</summary>
+<p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
+<form id="opening-form" style="display:block"></form>
+</details>
+</section>
+<div class="entry-grid">
 <section id="income" aria-labelledby="entry-title">
-<h2 id="entry-title">Registrar ingreso</h2>
+<h3 id="entry-title">Registrar ingreso</h3>
 <p id="plan" class="note"></p>
+<p><a id="income-plan-settings" href="#settings">Configurar el reparto de ingresos</a></p>
 <form id="entry">
 <label>Fecha <input id="day" type="date" required></label>
 <label>Ingreso ($) <input id="amount" inputmode="decimal" type="text" placeholder="250.00" required></label>
@@ -375,7 +591,7 @@ body.cloud-locked .quick-links { display:none; }
 <div id="preview" class="spaced" aria-live="polite"></div>
 </section>
 <section id="spending" aria-labelledby="expense-title">
-<h2 id="expense-title">Registrar gasto</h2>
+<h3 id="expense-title">Registrar gasto</h3>
 <form id="expense">
 <label>Fecha <input id="expense-day" type="date" required></label>
 <label>Importe ($) <input id="expense-amount" type="text" inputmode="decimal" placeholder="23.00" required></label>
@@ -385,10 +601,11 @@ body.cloud-locked .quick-links { display:none; }
 <button id="save-expense">Registrar gasto</button>
 </form>
 </section>
+</div>
 <section id="moves" aria-labelledby="transfers-title">
-<h2 id="transfers-title" tabindex="-1">Registrar transferencias</h2>
+<h3 id="transfers-title" tabindex="-1">Registrar transferencias</h3>
 <p class="muted">Después de mover el dinero en tu banco, pulsa <strong>Marcar completada</strong>. Puedes revisar o corregir el estado en el historial.</p>
-<h3>Transferencia manual</h3>
+<h4>Transferencia manual</h4>
 <p class="muted">Registra aquí dinero que ya moviste entre tus cuentas. Si el movimiento ya aparece como sugerido, márcalo como completado en la lista de abajo.</p>
 <form id="manual-transfer">
 <label>Fecha <input id="manual-day" type="date" required></label>
@@ -398,40 +615,114 @@ body.cloud-locked .quick-links { display:none; }
 <label>Concepto (opcional) <input id="manual-note" type="text" maxlength="120"></label>
 <button id="save-manual-transfer" type="submit">Registrar transferencia</button>
 </form>
-<h3>Transferencias sugeridas</h3>
+<h4>Transferencias sugeridas</h4>
 <div id="transfers"></div>
-<h3>Transferencias manuales registradas</h3>
+<h4>Transferencias manuales registradas</h4>
 <div id="manual-history"></div>
 </section>
-<section id="account-balances" aria-labelledby="balances-title">
-<h2 id="balances-title">Saldos por bucket</h2>
-<p class="muted">El saldo registrado suma los ingresos, resta los gastos y refleja las transferencias completadas. El saldo previsto incluye también las pendientes.</p>
-<div id="balances"></div>
-<details class="spaced">
-<summary>Saldos iniciales</summary>
-<p class="muted">Escribe lo que había en cada cuenta antes de los movimientos que registrarás aquí. Si un gasto ya está descontado de ese saldo, comienza el registro después de ese gasto.</p>
-<form id="opening-form" style="display:block"></form>
-</details>
+</div>
 </section>
+<section class="workspace-group" aria-labelledby="special-accounts-title">
+<h2 id="special-accounts-title">Tarjetas y pareja</h2>
+<div class="workspace-grid">
+<section id="credit-cards" aria-labelledby="cards-title">
+<h3 id="cards-title">Tarjetas de crédito</h3>
+<p class="muted">Registra el saldo que ya debes y añade solo los movimientos que aún no estén incluidos en ese saldo. Los pagos se registran por separado de los gastos bancarios.</p>
+<p id="card-summary" aria-live="polite"></p>
+<div id="card-balances"></div>
+<details id="card-editor" class="spaced">
+<summary>Añadir o editar una tarjeta</summary>
+<form id="card-form" autocomplete="off">
+<label>Tarjeta <select name="card" aria-label="Tarjeta para editar"></select></label>
+<label>Nombre <input name="label" maxlength="60" required></label>
+<label>Banco <input name="bank" maxlength="60"></label>
+<label>Últimos cuatro dígitos <input name="lastFour" inputmode="numeric" maxlength="4" pattern="[0-9]{4}"></label>
+<label>Saldo inicial ($) <input name="opening" inputmode="decimal" value="0" required></label>
+<label>Límite de crédito ($) <input name="limit" inputmode="decimal" required></label>
+<label>Tasa anual (APR %) <input name="apr" inputmode="decimal"></label>
+<label>Pago mínimo ($) <input name="minimum" inputmode="decimal"></label>
+<label>Próximo vencimiento <input name="due" type="date"></label>
+<button type="submit">Guardar tarjeta</button>
+<button type="button" id="remove-card" class="secondary" hidden>Eliminar tarjeta</button>
+</form>
+</details>
+<div id="card-activity" hidden>
+<h4>Registrar movimiento</h4>
+<form id="card-movement-form" autocomplete="off">
+<label>Tarjeta <select name="card" required></select></label>
+<label>Fecha <input name="day" type="date" required></label>
+<label>Tipo <select name="kind"></select></label>
+<label>Importe ($) <input name="amount" inputmode="decimal" required></label>
+<label>Concepto (opcional) <input name="note" maxlength="120"></label>
+<button type="submit">Registrar movimiento</button>
+</form>
+<h4>Historial de la tarjeta seleccionada</h4>
+<div id="card-history"></div>
+</div>
+</section>
+<section id="couple-finances" aria-labelledby="couple-title">
+<h3 id="couple-title">Finanzas de pareja</h3>
+<p class="muted">Registro de sus aportaciones y pagos. Al apartar dinero, registra el movimiento después de hacerlo en tu banco.</p>
+<div id="couple-balances"></div>
+<h4>Apartado de ahorros de él</h4>
+<p><a href="#bank-accounts-title">Gestionar cuentas en Saldos por bucket</a></p>
+<form id="couple-savings-form">
+  <label>Cuenta del apartado <select id="couple-savings-account" required></select></label>
+  <label>Nombre del apartado <input id="couple-savings-label" maxlength="60" required placeholder="Escribe su nombre"></label>
+  <button type="submit">Guardar apartado</button>
+</form>
+<p class="muted">Este nombre se guarda en Mara Money. Haz los depósitos o retiros desde tu banco y regístralos aquí.</p>
+<div id="couple-savings-balances"></div>
+<label>Mes del presupuesto <input id="couple-month" type="month"></label>
+<div id="couple-budget"></div>
+<h4>Registrar movimiento</h4>
+<form id="couple-form">
+  <label>Fecha <input id="couple-day" type="date" required></label>
+  <label>Tipo <select id="couple-kind">
+    <option value="contribution">Transferencia recibida</option>
+    <option value="personal">Gasto personal de él</option>
+    <option value="shared">Gasto compartido · 50 % para él</option>
+    <option value="clubInitial">Premium Travel Club · pago inicial</option>
+    <option value="clubMonthly">Premium Travel Club · mensualidad</option>
+    <option value="deposit">Apartar para su fondo de emergencia</option>
+    <option value="withdrawal">Usar dinero de su fondo de emergencia</option>
+  </select></label>
+  <label><span id="couple-amount-label">Importe</span> <input id="couple-amount" inputmode="decimal" required></label>
+  <label>Concepto o motivo <input id="couple-note" maxlength="120" required></label>
+  <label id="couple-account-text">Cuenta o medio de pago <input id="couple-account" maxlength="120"></label>
+  <label id="couple-bank-field" hidden><span id="couple-bank-label">Cuenta</span> <select id="couple-bank"></select></label>
+  <label>Recibo o referencia <input id="couple-reference" maxlength="300" placeholder="Confirmación, nombre del archivo o enlace privado"></label>
+  <button type="submit" id="couple-save">Registrar movimiento</button>
+</form>
+<p id="couple-status" class="muted" role="status"></p>
+<h4>Historial de movimientos</h4>
+<p class="muted">Los saldos siguen el orden de registro. Una anulación corrige el mes del movimiento original y queda en el historial.</p>
+<div id="couple-history"></div>
+</section>
+</div>
+</section>
+<section class="workspace-group" aria-labelledby="tracking-title">
+<h2 id="tracking-title">Historial, análisis y reportes</h2>
+<div class="workspace-grid">
 <section id="history-section" aria-labelledby="history-title">
-<h2 id="history-title">Historial de ingresos y transferencias</h2>
+<h3 id="history-title">Historial de ingresos y transferencias</h3>
 <p class="muted">Abre un día para revisar el reparto. Actualiza el estado aquí después de mover el dinero en tu banco.</p>
 <div class="entries" id="history"></div>
 </section>
 <section aria-labelledby="daily-title">
-<h2 id="daily-title">Resumen diario y gastos</h2>
+<h3 id="daily-title">Resumen diario y gastos</h3>
 <p class="muted">El neto es el ingreso menos los gastos del día. Las transferencias quedan en su propio historial.</p>
 <div id="daily"></div>
-<h3>Detalle de gastos</h3>
+<h4>Detalle de gastos</h4>
 <div id="expenses"></div>
 </section>
 <section id="financial-analysis" aria-labelledby="projection-title">
-<h2 id="projection-title">Análisis financiero y proyección</h2>
+<h3 id="projection-title">Análisis financiero y proyección</h3>
 <p class="muted">Se actualiza con tus ingresos, gastos y transferencias registrados. Úsalo para ver qué está consumiendo el saldo de cada cuenta y cómo podría cerrar el año si mantienes el mismo ritmo.</p>
 <div id="projection-result"></div>
 </section>
-<section aria-labelledby="report-title">
-<h2 id="report-title">Reporte para tu contable</h2>
+<section id="report-section" aria-labelledby="report-title">
+<h3 id="report-title">Reporte para tu contable</h3>
 <p class="muted">Descarga un CSV para abrir en Excel. Las transferencias completadas aparecen una vez, con su origen y destino.</p>
 <form id="report-form">
 <label>Desde <input id="report-start" type="date" required></label>
@@ -449,42 +740,58 @@ body.cloud-locked .quick-links { display:none; }
 </form>
 <p class="muted spaced">El reporte usa el día en que marcaste la transferencia como completada. Las transferencias antiguas sin esa fecha usan la del ingreso asociado y aparecen identificadas.</p>
 </section>
+</div>
+</section>
+<section class="workspace-group" aria-labelledby="preferences-title">
+<h2 id="preferences-title">Configuración y respaldo</h2>
+<div class="workspace-grid">
 <details id="settings">
-<summary><h2>Configurar categorías y reparto</h2></summary>
-<p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Escribe directamente los porcentajes que quieras usar. Deben sumar 100%. El cambio se aplica a los ingresos nuevos.</p>
+<summary><h3>Configurar categorías y reparto</h3></summary>
+<p class="muted">Escribe una categoría para cada cuenta bancaria. Puedes cambiarla en cualquier momento. Cada columna de porcentajes debe sumar 100 %. En la columna desde el 28 de noviembre, puedes dejar en blanco las cuentas que recibirán 0 %. Si dejas toda esa columna en blanco, se seguirá usando el reparto anterior.</p>
 <div id="configuration"></div>
-<h3>Letra del título y los encabezados</h3>
-<p class="muted">Selecciona Shooting Star.ttf en este dispositivo. La letra se guarda solo en este navegador.</p>
+<h4>Letra del título y los encabezados</h4>
+<p class="muted">DynaPuff se carga automáticamente. Si eliges otra letra, se guarda solo en este navegador.</p>
 <label>Archivo de fuente <input id="sticker-font-file" type="file" accept=".ttf,.otf,font/ttf,font/otf"></label>
 <p id="sticker-font-status" class="muted" aria-live="polite"></p>
 </details>
-<details>
-<summary><h2>Respaldo y recuperación</h2></summary>
+<details id="backup-section">
+<summary><h3>Respaldo y recuperación</h3></summary>
 <p class="muted">Tus datos se sincronizan con tu cuenta de Supabase cuando aparece «Guardado en la nube». Exporta un respaldo adicional. Importar reemplaza los datos de esta cuenta; espera la confirmación de sincronización.</p>
+<div id="cloud-logged" hidden>
+  <p id="cloud-user" class="muted"></p>
+  <p id="cloud-sync-state" role="status" aria-live="polite"></p>
+  <div class="actions">
+    <button type="button" id="cloud-retry" class="secondary" hidden>Reintentar sincronización</button>
+    <button type="button" id="cloud-signout" class="secondary">Cerrar sesión</button>
+  </div>
+</div>
 <div class="actions"><button id="export" type="button">Exportar respaldo JSON</button><label>Archivo de respaldo <input id="backup" type="file" accept=".json,application/json"></label></div>
 </details>
+</div>
+</section>
 <p id="status" class="note" role="status" aria-live="polite"></p>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 'use strict';
-const accounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
+const baseAccounts = ['CUENTA NEGOCIO','PERSONAL UNO','COOPERATIVA','PERSONAL BPP','CUENTA TODO FB','AHORROS FB'];
 const expenseCategories = [
   'Comida y supermercado','Transporte','Vivienda y servicios','Salud',
   'Compras personales','Suscripciones y entretenimiento','Negocio y materiales',
   'Viajes','Deudas y quiebra','Contribuciones','Otros'
 ];
 const validExpenseCategory = value => value === '' || expenseCategories.includes(value);
+const nextPlanStart = '2026-11-28';
 const travelPlanRates = [1400,3730,0,4445,425,0];
 const legacyBucketCount = 8; // Preserve compatibility with previous backups.
 const key = 'mara-money-v1';
 const maxIncome = 100000000;
 const maxEntries = 100000;
-const initial = () => ({version:1, provisional:true, rates:[1700,1700,1700,1700,1600,1600], purposes:accounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:accounts.map(() => 0), manualTransfers:[]});
+const initial = () => ({version:1, accounts:[...baseAccounts], provisional:true, nextRates:null, rates:[1700,1700,1700,1700,1600,1600], purposes:baseAccounts.map(() => ''), buckets:Array(legacyBucketCount).fill(-1), entries:[], expenses:[], opening:baseAccounts.map(() => 0), manualTransfers:[], creditCards:[], coupleFinances:[], coupleSavings:null});
 const sum = values => values.reduce((total,value) => total + value,0);
 const boundedInt = (value,min,max) => Number.isInteger(value) && value >= min && value <= max;
 const vector = (values,length,check) => Array.isArray(values) && values.length === length && values.every(check);
-const validRates = rates => vector(rates,accounts.length,x => boundedInt(x,0,10000)) && sum(rates) === 10000;
+const validRates = (rates,count) => vector(rates,count,x => boundedInt(x,0,10000)) && sum(rates) === 10000;
 const validDay = value => {
   if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const date = new Date(value + 'T00:00:00Z');
@@ -502,13 +809,14 @@ function allocate(amount,rates) {
   for (const index of byRemainder.slice(0,remaining)) parts[index]++;
   return parts;
 }
-function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTransfers=[]) {
+function balancesFor(entries,expenses=[],opening=baseAccounts.map(() => 0),manualTransfers=[]) {
   const posted = [...opening];
   const expected = [...opening];
   for (const entry of entries) {
+    if (entry.archived) continue;
     posted[entry.source] += entry.amount;
     entry.parts.forEach((part,index) => {
-      expected[index] += part;
+      expected[entry.cancelled?.includes(index) ? entry.source : index] += part;
       if (index !== entry.source && entry.done[index]) {
         posted[entry.source] -= part;
         posted[index] += part;
@@ -516,10 +824,12 @@ function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTra
     });
   }
   for (const expense of expenses) {
+    if (expense.archived) continue;
     posted[expense.account] -= expense.amount;
     expected[expense.account] -= expense.amount;
   }
   for (const move of manualTransfers) {
+    if (move.archived) continue;
     posted[move.source] -= move.amount;
     posted[move.destination] += move.amount;
     expected[move.source] -= move.amount;
@@ -527,20 +837,178 @@ function balancesFor(entries,expenses=[],opening=accounts.map(() => 0),manualTra
   }
   return {posted,expected};
 }
+const cardKinds = new Map([
+  ['purchase','Compra'], ['payment','Pago'], ['interest','Interés'],
+  ['fee','Cargo'], ['refund','Devolución']
+]);
+function validateCards(cards) {
+  if (!Array.isArray(cards) || cards.length > maxEntries) throw Error('La lista de tarjetas no es válida.');
+  return cards.map(card => {
+    if (!card || typeof card.label !== 'string' || !card.label.trim() || card.label.length > 60
+        || typeof card.bank !== 'string' || card.bank.length > 60
+        || typeof card.lastFour !== 'string' || !/^(?:[0-9]{4})?$/.test(card.lastFour)
+        || !boundedInt(card.opening,0,maxIncome) || !boundedInt(card.limit,1,maxIncome)
+        || !(card.apr === null || boundedInt(card.apr,0,100000))
+        || !(card.minimum === null || boundedInt(card.minimum,0,maxIncome))
+        || !(card.due === '' || validDay(card.due))
+        || !Array.isArray(card.movements) || card.movements.length > maxEntries) {
+      throw Error('Revisa los datos de la tarjeta. El límite debe ser mayor que cero.');
+    }
+    const movements = card.movements.map(move => {
+      if (!move || !cardKinds.has(move.kind) || !validDay(move.day)
+          || !boundedInt(move.amount,1,maxIncome) || typeof move.note !== 'string' || move.note.length > 120) {
+        throw Error('Revisa la fecha, el tipo y el importe del movimiento de tarjeta.');
+      }
+      return {kind:move.kind,day:move.day,amount:move.amount,note:move.note};
+    });
+    return {label:card.label,bank:card.bank,lastFour:card.lastFour,opening:card.opening,limit:card.limit,
+      apr:card.apr,minimum:card.minimum,due:card.due,movements};
+  });
+}
+const coupleKinds = new Map([
+  ['contribution','Transferencia recibida'], ['personal','Gasto personal'], ['shared','Gasto compartido'],
+  ['clubInitial','Premium Travel Club · inicial'], ['clubMonthly','Premium Travel Club · mensualidad'],
+  ['deposit','Depósito al fondo'], ['withdrawal','Retiro del fondo']
+]);
+const coupleShared = kind => ['shared','clubInitial','clubMonthly'].includes(kind);
+const coupleExpense = kind => kind === 'personal' || coupleShared(kind);
+const coupleShare = entry => coupleShared(entry.kind) ? Math.ceil(entry.amount / 2) : entry.amount;
+
+function coupleEffect(entry) {
+  const amount = coupleShare(entry);
+  switch (entry.kind) {
+    case 'contribution': return [amount,0];
+    case 'deposit': return [-amount,amount];
+    case 'withdrawal': return [0,-amount];
+    default: return [-amount,0];
+  }
+}
+
+const coupleFundMovement = kind => kind === 'deposit' || kind === 'withdrawal';
+function validateCoupleSavings(value,count) {
+  if (value === null) return null;
+  if (!value || !boundedInt(value.account,0,count-1) || typeof value.label !== 'string'
+      || !value.label.trim() || value.label.length > 60) throw Error('Escoge una cuenta y escribe el nombre del apartado.');
+  return {account:value.account,label:value.label.trim()};
+}
+
+function coupleLedger(entries) {
+  let available = 0;
+  let fund = 0;
+  const reversed = new Set();
+  const locations = new Map();
+  const history = entries.map((entry,index) => {
+    const original = entry.reverses === null ? entry : entries[entry.reverses];
+    const direction = original === entry ? 1 : -1;
+    const [cashChange,fundChange] = coupleEffect(original);
+    if (direction < 0) {
+      if (original.reverses !== null || reversed.has(entry.reverses)) throw Error('Esta anulación ya se registró o no es válida.');
+      reversed.add(entry.reverses);
+    }
+    if (fundChange) {
+      const key = original.savings?.account ?? null;
+      const balance = (locations.get(key)?.balance ?? 0) + direction * fundChange;
+      if (balance < 0) throw Error('El movimiento supera el saldo del fondo de emergencia en esa cuenta.');
+      const label = direction < 0 ? locations.get(key)?.label : original.savings?.label;
+      locations.set(key,{balance,label});
+    }
+    if (entry.kind === 'deposit' && direction > 0 && entry.amount > available) throw Error('El depósito supera el sobrante disponible.');
+    available += direction * cashChange;
+    fund += direction * fundChange;
+    return {entry,original,index,direction,available,fund};
+  });
+  return {available,fund,history,reversed,locations};
+}
+
+function validateCouple(entries,count) {
+  if (!Array.isArray(entries) || entries.length > maxEntries) throw Error('El historial de pareja no es válido.');
+  const checked = entries.map((entry,index) => {
+    if (!entry || !coupleKinds.has(entry.kind) || !validDay(entry.day)
+        || !boundedInt(entry.amount,1,maxIncome) || typeof entry.note !== 'string'
+        || !entry.note.trim() || entry.note.length > 120 || typeof entry.account !== 'string'
+        || entry.account.length > 120 || typeof entry.reference !== 'string' || entry.reference.length > 300
+        || !(entry.reverses === null || boundedInt(entry.reverses,0,index-1))) {
+      throw Error('Revisa la fecha, el importe y los datos del movimiento de pareja.');
+    }
+    const {kind,day,amount,note,account,reference,reverses} = entry;
+    if (reverses !== null && (kind !== entries[reverses].kind || amount !== entries[reverses].amount || day < entries[reverses].day)) {
+      throw Error('La anulación debe corresponder al movimiento original y tener una fecha igual o posterior.');
+    }
+    const savings = validateCoupleSavings(Object.hasOwn(entry,'savings') ? entry.savings : null,count);
+    if ((savings && !coupleFundMovement(kind)) || (reverses !== null &&
+        (savings?.account !== entries[reverses].savings?.account || savings?.label !== entries[reverses].savings?.label))) {
+      throw Error('El apartado del movimiento no es válido.');
+    }
+    return {kind,day,amount,note,account,reference,reverses,...(savings ? {savings} : {})};
+  });
+  coupleLedger(checked);
+  return checked;
+}
+
+function coupleBudget(entries,month,reversed) {
+  const recurring = month >= '2027-01';
+  const active = entries.filter((entry,index) => entry.reverses === null &&
+    entry.day.startsWith(month) && !reversed.has(index));
+  const actual = kind => sum(active.filter(kind).map(coupleShare));
+  return {
+    recurring,
+    received: actual(entry => entry.kind === 'contribution'),
+    expenses: actual(entry => coupleExpense(entry.kind)),
+    regular: actual(entry => coupleExpense(entry.kind) && entry.kind !== 'clubInitial'),
+    clubInitial: actual(entry => entry.kind === 'clubInitial'),
+    clubMonthly: actual(entry => entry.kind === 'clubMonthly')
+  };
+}
+
+const accountKey = name => name.trim().normalize('NFKC').toLowerCase();
+function validateAccounts(names) {
+  if (!Array.isArray(names) || names.length < baseAccounts.length
+      || names.some(name => typeof name !== 'string' || !name.trim() || name.length > 60)
+      || new Set(names.map(accountKey)).size !== names.length) {
+    throw Error('Los nombres de las cuentas deben ser válidos y únicos.');
+  }
+  return names.map(name => name.trim());
+}
+
+function extendAccounts(data,added) {
+  if (!added.length) return data;
+  const zeros = added.map(() => 0);
+  return {
+    ...data,accounts:[...data.accounts,...added],
+    rates:[...data.rates,...zeros],nextRates:data.nextRates ? [...data.nextRates,...zeros] : null,purposes:[...data.purposes,...added.map(() => '')],
+    opening:[...data.opening,...zeros],
+    entries:data.entries.map(entry => ({
+      ...entry,rates:[...entry.rates,...zeros],parts:[...entry.parts,...zeros],
+      done:[...entry.done,...added.map(() => false)],
+      ...(entry.completedOn ? {completedOn:[...entry.completedOn,...added.map(() => null)]} : {})
+    }))
+  };
+}
+
 function validate(data) {
-  if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates)
+  const accounts = validateAccounts(data && Object.hasOwn(data,'accounts') ? data.accounts : baseAccounts);
+  if (!data || data.version !== 1 || typeof data.provisional !== 'boolean' || !validRates(data.rates,accounts.length)
       || !vector(data.purposes,accounts.length,x => typeof x === 'string' && x.length <= 120)
       || !vector(data.buckets,legacyBucketCount,x => boundedInt(x,-1,accounts.length-1))
       || !Array.isArray(data.entries) || data.entries.length > maxEntries) throw Error('El formato del respaldo no es válido.');
-  const days = new Set();
+  const nextRates = Object.hasOwn(data,'nextRates') ? data.nextRates : null;
+  if (nextRates !== null && !validRates(nextRates,accounts.length)) {
+    throw Error('El reparto desde el 28 de noviembre debe sumar 100 %.');
+  }
   const entries = data.entries.map(entry => {
-    if (!entry || !validDay(entry.day) || days.has(entry.day) || !boundedInt(entry.amount,1,maxIncome)
-        || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates)
+    if (!entry || !validDay(entry.day) || !boundedInt(entry.amount,1,maxIncome)
+        || !boundedInt(entry.source,0,accounts.length-1) || !validRates(entry.rates,accounts.length)
         || !vector(entry.parts,accounts.length,x => boundedInt(x,0,entry.amount))
         || !allocate(entry.amount,entry.rates).every((part,index) => part === entry.parts[index])
         || !vector(entry.done,accounts.length,(x,index) => typeof x === 'boolean' && (!x || (index !== entry.source && entry.parts[index] > 0)))) throw Error('El respaldo contiene un ingreso o una transferencia inválida.');
-    days.add(entry.day);
     const result = {day:entry.day,amount:entry.amount,source:entry.source,rates:entry.rates,parts:entry.parts,done:entry.done};
+    if (entry.archived === true) result.archived = true;
+    if (entry.cancelled !== undefined) {
+      if (!Array.isArray(entry.cancelled) || entry.cancelled.length > accounts.length
+          || !entry.cancelled.every(i => boundedInt(i,0,accounts.length-1) && i !== entry.source && entry.parts[i] > 0 && !entry.done[i])
+          || new Set(entry.cancelled).size !== entry.cancelled.length) throw Error('Transferencias eliminadas inválidas.');
+      result.cancelled = entry.cancelled;
+    }
     if (Object.hasOwn(entry,'completedOn')) {
       if (!vector(entry.completedOn,accounts.length,(date,index) => date === null || (entry.done[index] && validDay(date)))) {
         throw Error('El respaldo contiene una fecha de transferencia inválida.');
@@ -549,6 +1017,12 @@ function validate(data) {
     }
     return result;
   });
+  const removedAccounts = data.removedAccounts ?? [];
+  if (!Array.isArray(removedAccounts) || removedAccounts.length >= accounts.length
+      || new Set(removedAccounts).size !== removedAccounts.length
+      || !removedAccounts.every(i => boundedInt(i,0,accounts.length-1) && !data.rates[i] && !nextRates?.[i])) {
+    throw Error('Revisa las cuentas eliminadas y sus porcentajes de reparto.');
+  }
   const opening = Object.hasOwn(data,'opening') ? data.opening : accounts.map(() => 0);
   const expenses = Object.hasOwn(data,'expenses') ? data.expenses : [];
   if (!vector(opening,accounts.length,x => boundedInt(x,-maxIncome,maxIncome))
@@ -558,6 +1032,7 @@ function validate(data) {
         || !boundedInt(expense.amount,1,maxIncome) || typeof expense.note !== 'string'
         || !expense.note.trim() || expense.note.length > 120) throw Error('El respaldo contiene un gasto inválido.');
     const result = {day:expense.day,account:expense.account,amount:expense.amount,note:expense.note};
+    if (expense.archived === true) result.archived = true;
     if (Object.hasOwn(expense,'category')) {
       if (!validExpenseCategory(expense.category)) throw Error('El respaldo contiene una categoría de gasto inválida.');
       result.category = expense.category;
@@ -572,9 +1047,12 @@ function validate(data) {
         || !boundedInt(move.amount,1,maxIncome) || typeof move.note !== 'string' || move.note.length > 120) {
       throw Error('El respaldo contiene una transferencia manual inválida.');
     }
-    return {day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
+    return {...(move.archived === true ? {archived:true} : {}),day:move.day,source:move.source,destination:move.destination,amount:move.amount,note:move.note};
   });
-  return {version:1,provisional:data.provisional,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers};
+  return {version:1,accounts,...(removedAccounts.length ? {removedAccounts} : {}),provisional:data.provisional,nextRates,rates:data.rates,purposes:data.purposes,buckets:data.buckets,entries,expenses:checkedExpenses,opening,manualTransfers:checkedTransfers,
+    creditCards:validateCards(Object.hasOwn(data,'creditCards') ? data.creditCards : []),
+    coupleFinances:validateCouple(Object.hasOwn(data,'coupleFinances') ? data.coupleFinances : [],accounts.length),
+    coupleSavings:validateCoupleSavings(Object.hasOwn(data,'coupleSavings') ? data.coupleSavings : null,accounts.length)};
 }
 
 const el = id => document.getElementById(id);
@@ -584,14 +1062,23 @@ const pct = rate => (rate/100).toFixed(2).replace(/\.00$/,'') + ' %';
 const safe = value => String(value).replace(/[&<>"']/g,char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 const bucketLabel = index => {
   const category = state.purposes[index];
-  const name = accounts[index];
+  const name = safe(state.accounts[index])+(activeAccount(index) ? '' : ' (eliminada)');
   return category ? '<strong>'+safe(category)+'</strong><br><small class="muted">'+name+'</small>' : name;
 };
-const options = () => accounts.map((name,i) => '<option value="'+i+'">'+name+'</option>').join('');
+const activeAccount = index => !state.removedAccounts?.includes(index);
+const activeIndices = () => state.accounts.map((_,i) => i).filter(activeAccount);
+const options = (indices=activeIndices()) => indices.map(i => '<option value="'+i+'">'+safe(state.accounts[i])+'</option>').join('');
 const expenseOptions = (selected='') => ['',...expenseCategories].map(category =>
   '<option value="'+safe(category)+'"'+(category === selected ? ' selected' : '')+'>'+(category || 'Sin categoría')+'</option>').join('');
-const table = (columns,rows) => '<div class="table"><table><thead><tr>'+columns.map(x => '<th scope="col">'+x+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table></div>';
-const row = cells => '<tr>'+cells.map(x => '<td>'+x+'</td>').join('')+'</tr>';
+function table(columns,rows) {
+  const headers = columns.map(label => '<th role="columnheader" scope="col">'+safe(label)+'</th>').join('');
+  const body = rows.map(({cells}) => '<tr role="row">'+cells.map((value,index) =>
+    '<td role="cell"><span class="field-caption" aria-hidden="true">'+safe(columns[index])+
+    '</span><div class="field-value">'+value+'</div></td>').join('')+'</tr>').join('');
+  return '<div class="table"><table role="table"><thead role="rowgroup"><tr role="row">'+headers+
+    '</tr></thead><tbody role="rowgroup">'+body+'</tbody></table></div>';
+}
+const row = cells => ({cells});
 const cash = value => '<span class="money">'+money(value)+'</span>';
 const say = (message,error=false) => {
   el('status').textContent = message;
@@ -604,44 +1091,79 @@ let unreadable = false;
 let cloudClient = null;
 let cloudUser = null;
 let cloudPending = null;
+let cloudInFlight = null;
 let cloudWriting = false;
 let cloudFailed = false;
 let cloudEpoch = 0;
+let cloudRowExists = false;
+let cloudRevision = null;
+let bankAccountSync = null;
 const cloudUrl = 'https://qkasvabnygwlfqagafqd.supabase.co';
 const cloudPublicKey = 'sb_publishable_tIJPllX5jnvmufNe53d1Dw_f9rFTx3g';
 // Original browser data is read but never automatically uploaded or overwritten.
 try { stored = localStorage.getItem(key); } catch { /* Safari may restrict localStorage */ }
 function cloudMessage(message,error=false) {
-  el('cloud-state').textContent = message;
-  el('cloud-state').classList.toggle('error',error);
+  const status = el(ready ? 'cloud-sync-state' : 'cloud-state');
+  status.textContent = message;
+  status.classList.toggle('error',error);
+  if (ready && bankAccountSync) {
+    bankAccountSync.hidden = false;
+    bankAccountSync.textContent = message;
+    bankAccountSync.classList.toggle('error',error);
+  }
 }
 function cloudLock() {
   ready = false;
+  el('quick-menu').open = false;
+  if (bankAccountSync) bankAccountSync.hidden = true;
+  bankAccountSync = null;
   document.body.classList.add('cloud-locked');
-  el('cloud-login').hidden = false;
+  el('cloud-access').hidden = false;
+  el('backup-section').open = false;
+  el('cloud-user').textContent = '';
+  el('cloud-sync-state').textContent = '';
   el('cloud-logged').hidden = true;
+  say('');
   el('cloud-retry').hidden = true;
+  resetCardForms();
+  el('couple-form').reset();
+  el('couple-savings-form').reset();
+  el('bank-account-form').reset();
+  el('bank-account-status').textContent = '';
+  el('couple-day').value = localDay();
+  el('couple-month').value = '';
+  el('couple-status').textContent = '';
+  renderCouple();
 }
 function cloudUnlock() {
   document.body.classList.remove('cloud-locked');
-  el('cloud-login').hidden = true;
+  el('cloud-access').hidden = true;
   el('cloud-logged').hidden = false;
   el('cloud-user').textContent = 'Sesión: ' + cloudUser.email;
   ready = true;
   renderSettings(); renderOpening(); render();
+  const target = quickDestinations.find(({link}) => link.hash === location.hash)?.section;
+  if (target) {
+    if (target.matches('details')) target.open = true;
+    target.scrollIntoView?.();
+  }
+  scheduleQuickLinkUpdate();
 }
 async function cloudLoad(user) {
   const epoch = ++cloudEpoch;
   cloudLock();
   cloudUser = user;
   cloudPending = null;
+  cloudInFlight = null;
   cloudFailed = false;
   cloudMessage('Cargando tus datos desde Supabase…');
   try {
-    const {data,error} = await cloudClient.from('mara_money_data').select('data').eq('user_id',user.id).maybeSingle();
+    const {data,error} = await cloudClient.from('mara_money_data').select('data,updated_at').eq('user_id',user.id).maybeSingle();
     if (error) throw error;
     if (epoch !== cloudEpoch) return;
     state = data ? validate(data.data) : initial();
+    cloudRowExists = !!data;
+    cloudRevision = data?.updated_at ?? null;
     cloudUnlock();
     cloudMessage(data ? 'Datos recuperados de la nube ✓' : 'Cuenta lista. Todavía no hay datos en la nube; importa tu respaldo JSON para recuperar tu historial.');
   } catch (error) {
@@ -649,16 +1171,45 @@ async function cloudLoad(user) {
     cloudMessage('No se pudo cargar la nube: '+error.message+'. Revisa tu conexión y vuelve a iniciar sesión.',true);
   }
 }
+async function writeCloudState(payload,userId) {
+  const updatedAt = new Date(Math.max(Date.now(),Date.parse(cloudRevision || '') + 1 || 0)).toISOString();
+  const values = {data:payload,updated_at:updatedAt};
+  const source = cloudClient.from('mara_money_data');
+  let write;
+  if (cloudRowExists) {
+    const update = source.update(values).eq('user_id',userId);
+    write = cloudRevision === null ? update.is('updated_at',null) : update.eq('updated_at',cloudRevision);
+  } else {
+    write = source.insert({...values,user_id:userId});
+  }
+  const result = await write.select('updated_at').maybeSingle();
+  if (result.data) return result.data.updated_at;
+  if (result.error && result.error.code !== '23505') throw result.error;
+
+  // A retry can follow a successful write whose response never arrived.
+  const current = await cloudClient.from('mara_money_data').select('data,updated_at').eq('user_id',userId).maybeSingle();
+  if (current.error) throw current.error;
+  if (current.data && JSON.stringify(validate(current.data.data)) === JSON.stringify(payload)) {
+    return current.data.updated_at;
+  }
+  throw Error('Hay otra versión de tus datos en la nube. Exporta este respaldo, recarga y vuelve a registrar solo los cambios pendientes');
+}
+
 async function cloudFlush() {
-  if (cloudWriting || !cloudPending || !cloudUser) return;
+  if (cloudWriting || !(cloudInFlight || cloudPending) || !cloudUser) return;
   cloudWriting = true;
   const epoch = cloudEpoch;
   try {
-    while (cloudPending && epoch === cloudEpoch) {
-      const payload = cloudPending;
-      cloudPending = null;
-      const {error} = await cloudClient.from('mara_money_data').upsert({user_id:cloudUser.id,data:payload,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-      if (error) throw error;
+    while ((cloudInFlight || cloudPending) && epoch === cloudEpoch) {
+      if (!cloudInFlight) {
+        cloudInFlight = cloudPending;
+        cloudPending = null;
+      }
+      const revision = await writeCloudState(cloudInFlight,cloudUser.id);
+      if (epoch !== cloudEpoch) return;
+      cloudRowExists = true;
+      cloudRevision = revision;
+      cloudInFlight = null;
     }
     if (epoch === cloudEpoch) {
       cloudFailed = false;
@@ -667,14 +1218,15 @@ async function cloudFlush() {
     }
   } catch (error) {
     if (epoch === cloudEpoch) {
-      if (!cloudPending) cloudPending = state;
       cloudFailed = true;
       el('cloud-retry').hidden = false;
+      el('backup-section').open = true;
+      say('Hay cambios sin sincronizar. Usa «Reintentar sincronización» en Respaldo y sesión.',true);
       cloudMessage('Sin sincronizar: '+error.message+'. No cierres esta pestaña; toca «Reintentar sincronización».',true);
     }
   } finally {
     cloudWriting = false;
-    if (cloudPending && !cloudFailed && epoch === cloudEpoch) void cloudFlush();
+    if ((cloudInFlight || cloudPending) && !cloudFailed) void cloudFlush();
   }
 }
 function save(next,recover=false) {
@@ -694,52 +1246,76 @@ function save(next,recover=false) {
     return false;
   }
 }
+function incomeRates(day) {
+  return day >= nextPlanStart && state.nextRates ? state.nextRates : state.rates;
+}
+
 function renderPreview() {
+  const day = el('day').value;
+  const rates = incomeRates(day);
+  const hasNextPlan = day >= nextPlanStart && state.nextRates !== null;
+  el('plan').textContent = hasNextPlan ? 'Reparto del 28 de noviembre de 2026 en adelante.'
+    : day >= nextPlanStart ? 'Se usa el reparto anterior hasta que guardes los porcentajes para el 28 de noviembre en adelante.'
+    : 'Reparto hasta el 27 de noviembre de 2026.';
   const amount = units(el('amount').value);
   if (!boundedInt(amount,1,maxIncome)) {
     el('preview').textContent = '';
     return;
   }
   const source = el('source').value === '' ? -1 : Number(el('source').value);
-  const parts = allocate(amount,state.rates);
-  el('preview').innerHTML = '<h3>Vista previa del reparto</h3>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],accounts.map((_,index) => row([bucketLabel(index),pct(state.rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
+  const parts = allocate(amount,rates);
+  el('preview').innerHTML = '<h4>Vista previa del reparto</h4>' + (source < 0 ? '<p class="muted">Selecciona la cuenta que recibió el ingreso para ver qué dejar y qué transferir.</p>' : '') + table(['Bucket','Porcentaje','Importe','Acción'],activeIndices().map(index => row([bucketLabel(index),pct(rates[index]),cash(parts[index]),index === source ? 'Dejar en cuenta' : !parts[index] ? 'Sin movimiento' : source < 0 ? 'Por definir' : 'Transferir'])));
 }
 const stateChip = (label,tone) => '<span class="state-chip chip-'+tone+'">'+label+'</span>';
 const balanceChip = (amount,tone) => '<span class="balance-chip chip-'+(amount < 0 ? 'negative' : tone)+'">'+money(amount)+'</span>';
-function transferButton(entry,index) {
+function removeButton(collection,index,label,part) {
+  const target = part === undefined ? '' : ' data-part="'+part+'"';
+  return '<button type="button" class="secondary" data-remove="'+collection+'" data-record="'+index+'"'+target+'>'+label+'</button>';
+}
+function transferButton(entry,entryIndex,index) {
   const label = entry.done[index] ? 'Volver a pendiente' : 'Marcar completada';
-  return '<button type="button" class="secondary" data-day="'+entry.day+'" data-index="'+index+'" aria-label="'+label+' · '+accounts[index]+'">'+label+'</button>';
+  return '<button type="button" class="secondary" data-entry-index="'+entryIndex+'" data-index="'+index+'" aria-label="'+label+' · '+safe(state.accounts[index])+'">'+label+'</button> '+removeButton('entries',entryIndex,'Eliminar transferencia',index);
 }
 function renderTransfers() {
-  const rows = [...state.entries].sort((a,b) => a.day.localeCompare(b.day)).flatMap(entry =>
-    entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index]
-      ? [row([entry.day,bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,index)+'</div>'])]
+  const rows = state.entries.map((entry,entryIndex) => ({entry,entryIndex}))
+    .sort((a,b) => a.entry.day.localeCompare(b.entry.day)).flatMap(({entry,entryIndex}) =>
+    entry.parts.flatMap((part,index) => index !== entry.source && part > 0 && !entry.done[index] && !entry.archived && !entry.cancelled?.includes(index)
+      ? [row([entry.day+' · Ingreso '+(entryIndex+1)+' ('+money(entry.amount)+')',bucketLabel(entry.source),bucketLabel(index),cash(part),'<div class="transfer-action">'+stateChip('Pendiente','pending')+transferButton(entry,entryIndex,index)+'</div>'])]
       : []));
   el('transfers').innerHTML = rows.length ? table(['Ingreso del','Desde','Hacia','Importe','Acción'],rows)
     : '<p class="muted">No hay transferencias pendientes. Cuando registres un ingreso, aquí aparecerán los importes que debas mover a otras cuentas.</p>';
 }
 function renderManualTransfers() {
-  const rows = [...state.manualTransfers].reverse().sort((a,b) => b.day.localeCompare(a.day)).map(move =>
-    row([move.day,bucketLabel(move.source),bucketLabel(move.destination),cash(move.amount),stateChip('Completada','done'),safe(move.note || '—')]));
-  el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto'],rows)
+  const rows = state.manualTransfers.map((move,index) => ({move,index})).reverse().sort((a,b) => b.move.day.localeCompare(a.move.day)).map(({move,index}) =>
+    row([move.day,bucketLabel(move.source),bucketLabel(move.destination),cash(move.amount),stateChip('Completada','done'),safe(move.note || '—'),removeButton('manualTransfers',index,'Eliminar transferencia')]));
+  el('manual-history').innerHTML = rows.length ? table(['Fecha','Desde','Hacia','Importe','Estado','Concepto','Acción'],rows)
     : '<p class="muted">Aún no hay transferencias manuales registradas.</p>';
 }
-function renderHistory(openDay) {
-  el('history').innerHTML = state.entries.length ? [...state.entries].sort((a,b) => b.day.localeCompare(a.day)).map(entry => {
-    const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index]).length;
-    const rows = accounts.map((name,index) => {
+function dailyIncomeTotals(entries) {
+  const totals = new Map();
+  for (const entry of entries) totals.set(entry.day,(totals.get(entry.day) ?? 0)+entry.amount);
+  return totals;
+}
+function renderHistory(openEntryIndex) {
+  const totals = dailyIncomeTotals(state.entries);
+  let previousDay;
+  el('history').innerHTML = state.entries.length ? state.entries.map((entry,entryIndex) => ({entry,entryIndex}))
+    .sort((a,b) => b.entry.day.localeCompare(a.entry.day) || b.entryIndex-a.entryIndex).map(({entry,entryIndex}) => {
+    const heading = entry.day === previousDay ? '' : '<h4>'+entry.day+' · Total del día '+money(totals.get(entry.day))+'</h4>';
+    previousDay = entry.day;
+    const pending = entry.parts.filter((part,index) => part > 0 && index !== entry.source && !entry.done[index] && !entry.archived && !entry.cancelled?.includes(index)).length;
+    const rows = state.accounts.map((_,index) => {
       const part = entry.parts[index];
       const move = index !== entry.source && part > 0;
-      const status = index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
-      const action = move ? transferButton(entry,index) : '';
+      const status = entry.cancelled?.includes(index) ? 'Eliminada' : entry.archived && move && !entry.done[index] ? 'Archivada' : index === entry.source ? 'Dejar en cuenta' : !move ? 'Sin movimiento' : entry.done[index] ? 'Completada' : 'Pendiente';
+      const action = move && !entry.archived && !entry.cancelled?.includes(index) ? transferButton(entry,entryIndex,index) : '';
       return row([bucketLabel(index),pct(entry.rates[index]),cash(part),stateChip(status,move ? (entry.done[index] ? 'done' : 'pending') : 'neutral'),action]);
     });
-    return '<details '+(entry.day === openDay ? 'open' : '')+'><summary>'+entry.day+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+accounts[entry.source]+'</strong>.</p>'+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
+    return heading+'<details '+(entryIndex === openEntryIndex ? 'open' : '')+'><summary>Ingreso '+(entryIndex+1)+' · '+money(entry.amount)+' · '+pending+' pendientes</summary><p>Ingreso recibido en <strong>'+safe(state.accounts[entry.source])+'</strong>.'+(entry.archived ? ' Anterior al restablecimiento.' : '')+'</p>'+removeButton('entries',entryIndex,'Eliminar ingreso')+table(['Bucket','Porcentaje','Importe','Estado','Acción'],rows)+'</details>';
   }).join('') : '<p class="muted">Todavía no hay ingresos registrados.</p>';
 }
 function renderExpenses() {
-  const days = new Map();
-  for (const entry of state.entries) days.set(entry.day,{income:entry.amount,expense:0});
+  const days = new Map([...dailyIncomeTotals(state.entries)].map(([day,income]) => [day,{income,expense:0}]));
   for (const expense of state.expenses) {
     const totals = days.get(expense.day) ?? {income:0,expense:0};
     totals.expense += expense.amount;
@@ -750,13 +1326,14 @@ function renderExpenses() {
   el('daily').innerHTML = dailyRows.length ? table(['Fecha','Ingresos','Gastos','Neto'],dailyRows) : '<p class="muted">Aún no hay ingresos ni gastos.</p>';
   const expenseRows = state.expenses.map((expense,index) => ({expense,index})).reverse()
     .sort((a,b) => b.expense.day.localeCompare(a.expense.day)).map(({expense,index}) =>
-      row([expense.day,safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
-        '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>']));
-  el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
+      row(['<form data-expense-index="'+index+'"><input type="date" id="expense-date-'+index+'" name="day" value="'+expense.day+
+        '" aria-label="Fecha de '+safe(expense.note)+'" required> <button type="submit" class="secondary">Guardar fecha</button></form>',safe(expense.note),bucketLabel(expense.account),cash(expense.amount),
+        '<select id="category-'+index+'" data-expense-index="'+index+'" aria-label="Categoría de '+safe(expense.note)+'">'+expenseOptions(expense.category)+'</select>',removeButton('expenses',index,'Eliminar gasto')]));
+  el('expenses').innerHTML = expenseRows.length ? table(['Fecha','Concepto','Cuenta','Importe','Categoría','Acción'],expenseRows) : '<p class="muted">Aún no hay gastos registrados.</p>';
 }
 function renderOpening() {
-  const rows = accounts.map((name,index) => row([name,
-    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+name+'" value="'+(state.opening[index]/100).toFixed(2)+'">']));
+  const rows = activeIndices().map(index => { const name = state.accounts[index]; return row([safe(name),
+    '<input id="opening-'+index+'" type="text" inputmode="decimal" aria-label="Saldo inicial de '+safe(name)+'" value="'+(state.opening[index]/100).toFixed(2)+'">']); });
   el('opening-form').innerHTML = table(['Cuenta','Saldo inicial ($)'],rows)
     +'<button class="secondary spaced" id="save-opening" type="submit">Guardar saldos iniciales</button>';
   el('save-opening').disabled = !ready;
@@ -778,8 +1355,8 @@ function analyzeFinances(data,today) {
   for (const move of movements) {
     const source = summaries[move.source];
     const destination = summaries[move.destination];
-    if (source) source.balance -= move.amount;
-    if (destination) destination.balance += move.amount;
+    if (source && !move.archived) source.balance -= move.amount;
+    if (destination && !move.archived) destination.balance += move.amount;
     if (move.day < start) continue;
     if (move.kind === 'Ingreso') destination.income += move.amount;
     if (move.kind === 'Gasto') {
@@ -798,9 +1375,9 @@ function analyzeFinances(data,today) {
     }
   }
   for (const entry of data.entries) {
-    if (entry.day > today) continue;
+    if (entry.archived || entry.day > today) continue;
     entry.parts.forEach((part,index) => {
-      if (index === entry.source || entry.done[index] || !part) return;
+      if (index === entry.source || entry.done[index] || entry.cancelled?.includes(index) || !part) return;
       summaries[index].pendingIn += part;
       summaries[entry.source].pendingOut += part;
     });
@@ -814,7 +1391,7 @@ function analyzeFinances(data,today) {
   return {start,yearEnd,observedDays,accounts,categoryTotals};
 }
 function categoryChart(totals,totalExpense) {
-  const heading = '<h3>Gastos por categoría</h3>';
+  const heading = '<h4>Gastos por categoría</h4>';
   if (!totalExpense) return heading+'<p class="muted">Cuando registres gastos en este período, aparecerán aquí.</p>';
   const bars = [...totals].sort((a,b) => b[1]-a[1]).map(([name,amount]) => {
     const share = (amount*100/totalExpense).toFixed(1);
@@ -841,13 +1418,13 @@ function renderProjection() {
   const negative = analysis.accounts.filter(item => item.end !== null && item.end < 0);
   if (negative.length) {
     const list = analysis.accounts.map((item,index) => item.end !== null && item.end < 0
-      ? accounts[index]+' ('+money(item.end)+')' : '').filter(Boolean);
+      ? safe(state.accounts[index])+' ('+money(item.end)+')' : '').filter(Boolean);
     alerts.push('<li><strong>Saldo estimado bajo cero:</strong> '+list.join(', ')+'. Revisa los gastos de esas cuentas o si necesitan recibir más del reparto.</li>');
   }
   const declining = analysis.accounts.map((item,index) => ({...item,index}))
     .filter(item => item.net < 0).sort((a,b) => a.net-b.net).slice(0,3);
   if (declining.length) {
-    const list = declining.map(item => accounts[item.index]+' ('+money(item.net)+')');
+    const list = declining.map(item => safe(state.accounts[item.index])+' ('+money(item.net)+')');
     alerts.push('<li><strong>Cuentas que consumieron saldo:</strong> '+list.join(', ')+'. Compara Gastos y Transferencias netas para identificar qué causó la caída.</li>');
   }
   const overspending = total('cost') > total('income');
@@ -862,7 +1439,7 @@ function renderProjection() {
   }
   const concepts = analysis.accounts.flatMap((item,index) => [...item.concepts.values()].map(concept => ({...concept,index})))
     .sort((a,b) => b.amount-a.amount).slice(0,5);
-  const spending = concepts.length ? '<h3>Gastos más altos del período</h3>'
+  const spending = concepts.length ? '<h4>Gastos más altos del período</h4>'
     +table(['Concepto','Cuenta','Total'],concepts.map(item => row([safe(item.label),bucketLabel(item.index),cash(item.amount)]))) : '';
   const note = analysis.accounts[0].end === null
     ? 'El estimado aparece cuando el historial abarca al menos 7 días.'
@@ -872,29 +1449,29 @@ function renderProjection() {
     +table(['Cuenta','Saldo actual','Ingresos','Gastos','Transferencias netas','Cambio del período','Estimado al 31 dic.'],
       rows.concat(row(['<strong>Total</strong>',cash(total('balance')),cash(total('income')),cash(total('cost')),cash(0),cash(total('net')),projectedTotal])))
     +'<p class="muted spaced">'+note+' Las transferencias completadas mueven saldo entre cuentas y se cancelan en el total.</p>'
-    +(alerts.length ? '<h3>Qué revisar</h3><ul>'+alerts.join('')+'</ul>' : '')+categoryChart(analysis.categoryTotals,total('cost'))+spending;
+    +(alerts.length ? '<h4>Qué revisar</h4><ul>'+alerts.join('')+'</ul>' : '')+categoryChart(analysis.categoryTotals,total('cost'))+spending;
 }
 function reportRows(data,start,end,account,type) {
   const rows = [];
-  function add(day,kind,source,destination,amount,note,dateBasis='Fecha registrada',expenseCategory='') {
+  function add(day,kind,source,destination,amount,note,dateBasis='Fecha registrada',expenseCategory='',archived=false) {
     if (day < start || day > end || (type && kind !== type)) return;
     if (account !== -1 && source !== account && destination !== account) return;
-    rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory});
+    rows.push({day,kind,source,destination,amount,note,dateBasis,expenseCategory,archived});
   }
   for (const entry of data.entries) {
-    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso diario');
+    add(entry.day,'Ingreso',null,entry.source,entry.amount,'Ingreso registrado','Fecha registrada','',entry.archived);
     entry.parts.forEach((part,index) => {
       if (!entry.done[index]) return;
       const completed = entry.completedOn?.[index];
       add(completed || entry.day,'Transferencia',entry.source,index,part,'Entre cuentas propias',
-        completed ? 'Fecha en que se marcó completada' : 'Fecha del ingreso asociado');
+        completed ? 'Fecha en que se marcó completada' : 'Fecha del ingreso asociado','',entry.archived);
     });
   }
   for (const expense of data.expenses) {
-    add(expense.day,'Gasto',expense.account,null,expense.amount,expense.note,'Fecha registrada',expense.category);
+    add(expense.day,'Gasto',expense.account,null,expense.amount,expense.note,'Fecha registrada',expense.category,expense.archived);
   }
   for (const move of data.manualTransfers ?? []) {
-    add(move.day,'Transferencia',move.source,move.destination,move.amount,move.note || 'Entre cuentas propias');
+    add(move.day,'Transferencia',move.source,move.destination,move.amount,move.note || 'Entre cuentas propias','Fecha registrada','',move.archived);
   }
   return rows.sort((a,b) => a.day.localeCompare(b.day));
 }
@@ -904,56 +1481,478 @@ function reportCsv(rows) {
     const escaped = /^\s*[=+@-]|^[\t\r\n]/.test(text) ? "'"+text : text;
     return '"'+escaped.replace(/"/g,'""')+'"';
   };
-  const name = index => index === null ? '' : accounts[index];
+  const name = index => index === null ? '' : state.accounts[index];
   const category = index => index === null ? '' : state.purposes[index];
   const header = ['Fecha','Tipo','Cuenta origen','Categoría origen','Cuenta destino','Categoría destino','Concepto','Importe USD','Referencia de fecha'];
   const lines = rows.map(item => [item.day,item.kind,name(item.source),category(item.source),
     name(item.destination),category(item.destination),item.note,(item.amount/100).toFixed(2),item.dateBasis]);
   return '\uFEFF'+[header,...lines].map(cells => cells.map(csvCell).join(',')).join('\r\n')+'\r\n';
 }
-function render(openDay) {
-  el('plan').textContent = state.provisional ? 'Reparto provisional editable · 17 % en las primeras cuatro cuentas y 16 % en las últimas dos.' : 'Reparto personalizado · '+state.rates.map(pct).join(' / ');
+function coupleLocationName(account,label) {
+  if (account === null) return 'Sin apartado asignado';
+  return label ? state.accounts[account]+' · '+label : state.accounts[account];
+}
+
+function renderCoupleSetup() {
+  const account = el('couple-savings-account');
+  account.innerHTML = '<option value="">Escoge una cuenta</option>'+options();
+  const savings = state.coupleSavings;
+  account.value = savings?.account ?? '';
+  el('couple-savings-label').value = savings?.label ?? '';
+}
+
+function renderCoupleBank(locations,preserve=false) {
+  const kind = el('couple-kind').value;
+  const fundMovement = coupleFundMovement(kind);
+  const chooseBank = fundMovement || kind === 'contribution';
+  const bank = el('couple-bank');
+  const previous = bank.value;
+  const savings = state.coupleSavings;
+  el('couple-amount-label').textContent = coupleShared(kind) ? 'Importe total del recibo' : 'Importe';
+  el('couple-bank-field').hidden = !chooseBank;
+  el('couple-account-text').hidden = chooseBank;
+  el('couple-bank-label').textContent = kind === 'withdrawal' ? 'Cuenta de retiro' : 'Cuenta donde se depositó';
+
+  if (kind === 'withdrawal') {
+    bank.innerHTML = [...locations].filter(([,location]) => location.balance > 0).map(([account,location]) => {
+      const label = savings?.account === account ? savings.label : location.label;
+      return '<option value="'+(account ?? '')+'">'+safe(coupleLocationName(account,label))+'</option>';
+    }).join('') || '<option value="">Sin saldo para retirar</option>';
+  } else {
+    bank.innerHTML = '<option value="">Sin cuenta asignada</option>'+activeIndices().map(account => {
+      const label = kind === 'deposit' && savings?.account === account ? savings.label : '';
+      return '<option value="'+account+'">'+safe(coupleLocationName(account,label))+'</option>';
+    }).join('');
+  }
+  if (preserve && [...bank.options].some(option => option.value === previous)) {
+    bank.value = previous;
+  } else if (savings && [...bank.options].some(option => option.value === String(savings.account))) {
+    bank.value = String(savings.account);
+  }
+}
+
+function renderCouple(preserveBank=true) {
+  const history = el('couple-history');
+  const balances = el('couple-balances');
+  const budget = el('couple-budget');
+  el('couple-save').disabled = !ready;
+  if (!ready) {
+    history.replaceChildren();
+    balances.replaceChildren();
+    budget.replaceChildren();
+    el('couple-savings-balances').replaceChildren();
+    el('couple-bank').replaceChildren();
+    return;
+  }
+  el('couple-month').value ||= localDay().slice(0,7);
+  el('couple-day').value ||= localDay();
+  const month = el('couple-month').value;
+  const {available,fund,history:entries,reversed,locations} = coupleLedger(state.coupleFinances);
+  const savings = state.coupleSavings;
+  if (savings && !locations.has(savings.account)) locations.set(savings.account,{balance:0,label:savings.label});
+  el('couple-savings-balances').innerHTML = locations.size ? table(['Cuenta y apartado','Saldo reservado'],
+    [...locations].map(([account,location]) => row([
+      safe(coupleLocationName(account,savings?.account === account ? savings.label : location.label)),cash(location.balance)
+    ]))) : '';
+  renderCoupleBank(locations,preserveBank);
+  balances.innerHTML = table(['Sobrante disponible','Fondo de emergencia de él','Total bajo tu custodia'],
+    [row([cash(available),cash(fund),cash(available+fund)])]);
+  const actual = coupleBudget(state.coupleFinances,month,reversed);
+  const budgetRow = (label,planned,paid) => row([label,planned === null ? '—' : cash(planned),cash(paid),
+    planned === null ? '—' : cash(planned-paid)]);
+  const initialPaid = sum(entries.filter(({original}) => original.kind === 'clubInitial')
+    .map(({original,direction}) => direction * coupleShare(original)));
+  budget.innerHTML = '<p>Desde enero de 2027, aportación sugerida de '+cash(50000)+' cada dos viernes.</p>'
+    + table(['Concepto','Presupuesto de él','Real de él','Presupuesto − real'],[
+      budgetRow('Obligaciones del mes',actual.recurring ? 103224 : null,actual.regular),
+      budgetRow('Mensualidad del club · incluida arriba',actual.recurring ? 7624 : null,actual.clubMonthly),
+      budgetRow('Pago inicial del club · por separado',month === '2026-11' ? 76450 : null,actual.clubInitial)
+    ])
+    + '<p class="muted">Premium Travel Club. Pago inicial de '+cash(152900)+' con vencimiento el 27 nov 2026. Mensualidad de '
+    + cash(15248)+' desde enero de 2027. Del inicial, se han registrado '+cash(initialPaid)+' a su cargo.</p>'
+    + '<p>Recibido en el mes '+cash(actual.received)+' · Pagado a su cargo '+cash(actual.expenses)
+    + ' · Sobrante del mes antes del fondo '+cash(actual.received-actual.expenses)+'</p>';
+  history.innerHTML = entries.length ? table(
+    ['N.º / fecha','Movimiento','Importe total','Parte de él','Cuenta o medio','Recibo o referencia','Disponible','Fondo','Corrección'],
+    entries.slice().reverse().map(({entry,index,direction,available,fund}) => row([
+      (index+1)+' · '+safe(entry.day),
+      (direction < 0 ? 'Anulación de #'+(entry.reverses+1)+' · ' : '')+coupleKinds.get(entry.kind)+'<br>'+safe(entry.note),
+      cash(direction*entry.amount),cash(direction*coupleShare(entry)),safe(entry.savings ? coupleLocationName(entry.savings.account,entry.savings.label) : entry.account || '—'),
+      safe(entry.reference || '—'),cash(available),cash(fund),
+      direction < 0 ? '—' : reversed.has(index) ? 'Anulado'
+        : '<button type="button" class="secondary" data-couple-reverse="'+index+'" aria-label="Anular movimiento '+(index+1)+'">Anular</button>'
+    ]))) : '<p class="muted">Todavía no hay movimientos.</p>';
+}
+
+function recordCouple(entry) {
+  if (!ready || !cloudUser || cloudFailed) {
+    el('couple-status').textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
+    return false;
+  }
+  try {
+    const entries = [...state.coupleFinances,entry];
+    validateCouple(entries,state.accounts.length);
+    if (!save({...state,coupleFinances:entries})) return false;
+    renderCouple();
+    el('couple-status').textContent = 'Movimiento registrado. Consulta el estado de sincronización en Respaldo y sesión.';
+    return true;
+  } catch (error) {
+    el('couple-status').textContent = error.message;
+    return false;
+  }
+}
+
+el('couple-savings-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const account = el('couple-savings-account').value;
+  const label = el('couple-savings-label').value.trim();
+  if (!account || !label) {
+    el('couple-status').textContent = 'Escoge una cuenta y escribe el nombre del apartado.';
+    return;
+  }
+  if (save({...state,coupleSavings:{account:Number(account),label}})) {
+    renderCoupleSetup();
+    renderCouple(false);
+    el('couple-status').textContent = 'Apartado configurado. Los movimientos anteriores conservan su cuenta.';
+  }
+});
+el('couple-kind').addEventListener('change',() => renderCoupleBank(coupleLedger(state.coupleFinances).locations));
+el('couple-month').addEventListener('change',() => renderCouple());
+el('couple-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const kind = el('couple-kind').value;
+  const selected = el('couple-bank').value;
+  const account = selected === '' ? null : Number(selected);
+  const entry = {
+    kind, day:el('couple-day').value,
+    amount:units(el('couple-amount').value), note:el('couple-note').value.trim(),
+    account:kind === 'contribution' ? state.accounts[account] ?? '' : coupleFundMovement(kind) ? '' : el('couple-account').value.trim(),
+    reference:el('couple-reference').value.trim(), reverses:null
+  };
+  if (coupleFundMovement(kind) && account !== null) {
+    const current = state.coupleSavings;
+    const prior = coupleLedger(state.coupleFinances).locations.get(account);
+    entry.savings = {account,label:current?.account === account ? current.label : prior?.label || 'Ahorros de él'};
+  }
+  if (recordCouple(entry)) {
+    for (const id of ['couple-amount','couple-note','couple-account','couple-reference']) el(id).value = '';
+  }
+});
+el('couple-history').addEventListener('click',event => {
+  const button = event.target.closest('button[data-couple-reverse]');
+  if (!ready || !button) return;
+  const index = Number(button.dataset.coupleReverse);
+  const original = state.coupleFinances[index];
+  const note = prompt('Motivo de la anulación del movimiento #'+(index+1)+' con fecha '+el('couple-day').value);
+  if (note === null) return;
+  recordCouple({...original,day:el('couple-day').value,note:note.trim(),reverses:index});
+});
+
+function renderAccountOptions() {
+  const accountOptions = options();
+  for (const id of ['source','expense-account','manual-source','manual-destination','report-account']) {
+    const select = el(id);
+    const selected = ready ? select.value : '';
+    const placeholder = id === 'report-account' ? '<option value="">Todas las cuentas</option>'
+      : '<option value="" disabled>Selecciona una cuenta</option>';
+    select.innerHTML = placeholder+(id === 'report-account' ? options(state.accounts.map((_,i) => i)) : accountOptions);
+    select.value = [...select.options].some(option => option.value === selected) ? selected : '';
+  }
+}
+
+function render(openEntryIndex) {
+  renderAccountOptions();
+  el('bank-account-add').disabled = !ready;
+  el('reset-balances').disabled = !ready;
   el('save-entry').disabled = !ready;
   el('save-expense').disabled = !ready;
   el('save-manual-transfer').disabled = !ready;
   el('export').disabled = !ready;
   el('download-report').disabled = !ready;
   const {posted,expected} = balancesFor(state.entries,state.expenses,state.opening,state.manualTransfers);
-  el('balances').innerHTML = table(['Bucket','Saldo registrado','Saldo previsto'],accounts.map((_,index) => row([bucketLabel(index),balanceChip(posted[index],'posted'),balanceChip(expected[index],'forecast')])).concat(row(['<strong>Total</strong>',cash(sum(posted)),cash(sum(expected))])));
+  const balanceTable = indices => table(['Bucket','Saldo registrado','Saldo previsto'],indices.map(i =>
+    row([bucketLabel(i),balanceChip(posted[i],'posted'),balanceChip(expected[i],'forecast')])).concat(
+    row(['<strong>Total</strong>',cash(sum(indices.map(i => posted[i]))),cash(sum(indices.map(i => expected[i])))])));
+  el('balances').innerHTML = balanceTable(activeIndices())+(state.removedAccounts?.length
+    ? '<details><summary>Saldos de cuentas eliminadas</summary>'+balanceTable(state.removedAccounts)+'</details>' : '');
+  renderBankChoice();
   renderPreview();
   renderTransfers();
   renderManualTransfers();
-  renderHistory(openDay);
+  renderHistory(openEntryIndex);
   renderExpenses();
   renderProjection();
+  renderCards();
+  renderCoupleSetup();
+  renderCouple(false);
 }
 function renderSettings() {
-  const accountRows = accounts.map((name,index) => row([name,
-    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje de '+name+'" value="'+(state.rates[index]/100)+'">',
-    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+name+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']));
-  el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Porcentaje (%)','Categoría del bucket'],accountRows)
+  const accountRows = activeIndices().map(index => { const name = state.accounts[index]; return row([safe(name),
+    '<input class="rate" type="text" inputmode="decimal" required size="6" aria-label="Porcentaje hasta el 27 de noviembre para '+safe(name)+'" value="'+(state.rates[index]/100)+'">',
+    '<input class="next-rate" type="text" inputmode="decimal" size="6" aria-label="Porcentaje desde el 28 de noviembre para '+safe(name)+'" value="'+(state.nextRates ? state.nextRates[index]/100 : '')+'">',
+    '<input class="purpose" type="text" maxlength="120" aria-label="Categoría de '+safe(name)+'" placeholder="Sin categoría" value="'+safe(state.purposes[index])+'">']); });
+  el('configuration').innerHTML = '<form id="preferences" style="display:block">'+table(['Cuenta bancaria','Hasta el 27 nov 2026 (%)','Desde el 28 nov 2026 (%)','Categoría del bucket'],accountRows)
     +'<p id="rate-total" class="spaced" aria-live="polite"></p>'
+    +'<p id="next-rate-total" aria-live="polite"></p>'
     +'<p class="note">Plan temporal para Premium Travel Club · meta de $1,529 antes del 27 de noviembre de 2026. Usa los porcentajes hasta completar la meta y ajusta el último importe a lo que falte.</p>'
     +'<div class="actions spaced"><button id="load-travel-plan" type="button" class="secondary">Cargar plan temporal de viajes</button><button id="save-settings">Guardar configuración</button></div></form>';
   el('save-settings').disabled = !ready;
   updateTotal();
 }
 const fields = selector => Array.from(el('configuration').querySelectorAll(selector));
-const readRates = () => fields('.rate').map(input => units(input.value));
+function accountValues(selector,read,inactive) {
+  const inputs = fields(selector);
+  let position = 0;
+  return state.accounts.map((_,index) => activeAccount(index) ? read(inputs[position++]) : inactive(index));
+}
+const readRates = () => accountValues('.rate',input => units(input.value),() => 0);
+function readNextRates() {
+  const values = fields('.next-rate').map(input => input.value.trim());
+  return values.some(Boolean) ? accountValues('.next-rate',input => units(input.value.trim() || '0'),() => 0) : null;
+}
 function updateTotal() {
   const rates = readRates();
-  el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total ingresado · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
-  el('rate-total').classList.toggle('error',!validRates(rates));
+  el('rate-total').textContent = rates.every(Number.isFinite) ? 'Total hasta el 27 nov · '+pct(sum(rates)) : 'Escribe porcentajes con hasta dos decimales.';
+  el('rate-total').classList.toggle('error',!validRates(rates,state.accounts.length));
+  const next = readNextRates();
+  const total = el('next-rate-total');
+  total.textContent = next === null ? 'Reparto desde el 28 nov pendiente de configurar.'
+    : next.every(Number.isFinite) ? 'Total desde el 28 nov · '+pct(sum(next)) : 'Escribe porcentajes con hasta dos decimales.';
+  total.classList.toggle('error',next !== null && !validRates(next,state.accounts.length));
 }
 
 function localDay() {
   const today = new Date();
   return [today.getFullYear(),today.getMonth()+1,today.getDate()].map(part => String(part).padStart(2,'0')).join('-');
 }
+const cardForm = el('card-form');
+const cardFields = cardForm.elements;
+const movementForm = el('card-movement-form');
+const movementFields = movementForm.elements;
+const cardName = card => [card.label,card.bank,card.lastFour && '•••• '+card.lastFour].filter(Boolean).join(' · ');
+const cardBalance = card => card.opening + sum(card.movements.map(({kind,amount}) =>
+  kind === 'payment' || kind === 'refund' ? -amount : amount));
+const selectedCard = field => field.value === '' ? -1 : Number(field.value);
+const amountText = amount => amount === null ? '' : (amount/100).toFixed(2);
+const optionalAmount = field => field.value.trim() === '' ? null : units(field.value);
+
+function resetCardForms() {
+  cardForm.reset();
+  cardFields.card.value = '';
+  el('card-editor').open = false;
+  el('remove-card').hidden = true;
+  movementForm.reset();
+  movementFields.card.value = '';
+  movementFields.day.value = localDay();
+  el('card-history').textContent = '';
+  el('card-balances').textContent = '';
+  el('card-summary').textContent = '';
+}
+function fillCardForm() {
+  const card = state.creditCards[selectedCard(cardFields.card)];
+  cardFields.label.value = card?.label ?? '';
+  cardFields.bank.value = card?.bank ?? '';
+  cardFields.lastFour.value = card?.lastFour ?? '';
+  cardFields.opening.value = amountText(card?.opening ?? 0);
+  cardFields.limit.value = amountText(card?.limit ?? null);
+  cardFields.apr.value = amountText(card?.apr ?? null);
+  cardFields.minimum.value = amountText(card?.minimum ?? null);
+  cardFields.due.value = card?.due ?? '';
+  el('remove-card').hidden = !card;
+}
+function renderCardHistory() {
+  const card = state.creditCards[selectedCard(movementFields.card)];
+  const rows = (card?.movements ?? []).map((move,index) => ({move,index}))
+    .sort((a,b) => b.move.day.localeCompare(a.move.day) || b.index-a.index)
+    .map(({move,index}) => row([move.day,cardKinds.get(move.kind),cash(move.amount),safe(move.note),
+      '<button type="button" class="secondary" data-remove-movement="'+index+'" aria-label="Eliminar movimiento del '+move.day+'">Eliminar</button>']));
+  el('card-history').innerHTML = rows.length ? table(['Fecha','Tipo','Importe','Concepto','Acción'],rows)
+    : '<p class="muted">Todavía no hay movimientos para esta tarjeta.</p>';
+}
+function renderCards() {
+  const cards = state.creditCards;
+  const editing = selectedCard(cardFields.card);
+  const activity = selectedCard(movementFields.card);
+  const choices = cards.map((card,index) => '<option value="'+index+'">'+safe(cardName(card))+'</option>').join('');
+  cardFields.card.innerHTML = '<option value="">Nueva tarjeta</option>'+choices;
+  cardFields.card.value = cards[editing] ? String(editing) : '';
+  movementFields.card.innerHTML = choices;
+  movementFields.card.value = cards[activity] ? String(activity) : cards.length ? '0' : '';
+  el('card-activity').hidden = cards.length === 0;
+  const balances = cards.map(cardBalance);
+  const debt = sum(balances.map(balance => Math.max(0,balance)));
+  const paid = sum(cards.map(card => sum(card.movements.filter(move => move.kind === 'payment').map(move => move.amount))));
+  el('card-summary').textContent = cards.length ? 'Deuda total '+money(debt)+' · Pagos registrados '+money(paid)
+    : 'Todavía no tienes tarjetas registradas.';
+  el('card-balances').innerHTML = cards.length ? table(
+    ['Tarjeta','Saldo actual','Límite','Crédito disponible','Uso','APR','Pago mínimo','Vencimiento'],
+    cards.map((card,index) => {
+      const balance = balances[index];
+      return row([safe(cardName(card)),balance < 0 ? cash(-balance)+' a favor' : cash(balance),
+        cash(card.limit),cash(Math.max(0,card.limit-balance)),pct(Math.round(Math.max(0,balance)/card.limit*10000)),
+        card.apr === null ? '—' : pct(card.apr),card.minimum === null ? '—' : cash(card.minimum),card.due || '—']);
+    })) : '';
+  renderCardHistory();
+}
+function saveCards(creditCards,message) {
+  if (!save({...state,creditCards})) return false;
+  renderCards();
+  say(message);
+  return true;
+}
+movementFields.kind.innerHTML = [...cardKinds].map(([kind,label]) => '<option value="'+kind+'">'+label+'</option>').join('');
+cardFields.card.addEventListener('change',fillCardForm);
+movementFields.card.addEventListener('change',renderCardHistory);
+cardForm.addEventListener('submit',event => {
+  event.preventDefault();
+  const creditCards = [...state.creditCards];
+  const index = selectedCard(cardFields.card);
+  const card = {
+    label:cardFields.label.value.trim(), bank:cardFields.bank.value.trim(), lastFour:cardFields.lastFour.value.trim(),
+    opening:units(cardFields.opening.value), limit:units(cardFields.limit.value),
+    apr:optionalAmount(cardFields.apr), minimum:optionalAmount(cardFields.minimum), due:cardFields.due.value,
+    movements:creditCards[index]?.movements ?? []
+  };
+  const target = index === -1 ? creditCards.length : index;
+  creditCards[target] = card;
+  if (saveCards(creditCards,'Tarjeta guardada.')) {
+    cardFields.card.value = String(target);
+    movementFields.card.value = String(target);
+    fillCardForm();
+    renderCardHistory();
+  }
+});
+el('remove-card').addEventListener('click',() => {
+  const index = selectedCard(cardFields.card);
+  if (!ready || !state.creditCards[index] || !confirm('¿Eliminar esta tarjeta y todo su historial?')) return;
+  if (saveCards(state.creditCards.filter((_,i) => i !== index),'Tarjeta eliminada.')) {
+    cardFields.card.value = '';
+    movementFields.card.selectedIndex = state.creditCards.length ? 0 : -1;
+    fillCardForm();
+    renderCardHistory();
+  }
+});
+movementForm.addEventListener('submit',event => {
+  event.preventDefault();
+  const index = selectedCard(movementFields.card);
+  const card = state.creditCards[index];
+  if (!card) return;
+  const movement = {kind:movementFields.kind.value,day:movementFields.day.value,
+    amount:units(movementFields.amount.value),note:movementFields.note.value.trim()};
+  const creditCards = state.creditCards.map((item,i) => i === index
+    ? {...card,movements:[...card.movements,movement]} : item);
+  if (saveCards(creditCards,'Movimiento de tarjeta registrado.')) {
+    movementFields.amount.value = '';
+    movementFields.note.value = '';
+  }
+});
+el('card-history').addEventListener('click',event => {
+  const button = event.target.closest('button[data-remove-movement]');
+  if (!button || !ready) return;
+  const index = selectedCard(movementFields.card);
+  const card = state.creditCards[index];
+  const movement = Number(button.dataset.removeMovement);
+  if (!card?.movements[movement] || !confirm('¿Eliminar este movimiento y recalcular el saldo?')) return;
+  const creditCards = state.creditCards.map((item,i) => i === index
+    ? {...card,movements:card.movements.filter((_,j) => j !== movement)} : item);
+  saveCards(creditCards,'Movimiento de tarjeta eliminado.');
+});
+
+function renderBankChoice() {
+  const select = el('bank-choice');
+  const previous = select.value;
+  select.innerHTML = '<option value="">Selecciona una cuenta</option>'+options();
+  select.value = ready && [...select.options].some(o => o.value === previous) ? previous : '';
+  updateBankFields();
+}
+function updateBankFields() {
+  const value = el('bank-choice').value;
+  const index = Number(value);
+  const chosen = value !== '' && ready && activeAccount(index);
+  el('bank-new-name').value = chosen ? state.accounts[index] : '';
+  const needsTarget = chosen && (state.rates[index] > 0 || state.nextRates?.[index] > 0);
+  el('share-target-label').hidden = !needsTarget;
+  el('share-target').innerHTML = '<option value="">Escoge una cuenta</option>'+options(activeIndices().filter(i => i !== index));
+  el('delete-bank').disabled = !chosen;
+}
+function finishBankEdit(next,message) {
+  bankAccountSync = el('bank-account-sync');
+  if (!save(next)) return;
+  el('bank-choice').value = '';
+  renderSettings();
+  renderOpening();
+  render();
+  el('bank-account-status').textContent = message;
+}
+el('bank-choice').addEventListener('change',updateBankFields);
+el('edit-bank').addEventListener('submit',event => {
+  event.preventDefault();
+  if (!el('bank-choice').value) return;
+  const index = Number(el('bank-choice').value);
+  const name = el('bank-new-name').value.trim();
+  if (!name || state.accounts.some((old,i) => i !== index && accountKey(old) === accountKey(name))) {
+    el('bank-account-status').textContent = 'Escribe un nombre único de hasta 60 caracteres.';
+    return;
+  }
+  const accounts = state.accounts.map((old,i) => i === index ? name : old);
+  const coupleFinances = state.coupleFinances.map(entry => entry.kind === 'contribution' && entry.account === state.accounts[index]
+    ? {...entry,account:name} : entry);
+  finishBankEdit({...state,accounts,coupleFinances},'Nombre guardado: '+name+'.');
+});
+el('delete-bank').addEventListener('click',() => {
+  if (!el('bank-choice').value) return;
+  const index = Number(el('bank-choice').value);
+  const name = state.accounts[index];
+  const status = el('bank-account-status');
+  if (activeIndices().length === 1) {
+    status.textContent = 'Añade otra cuenta antes de eliminar la última cuenta activa.';
+    return;
+  }
+  const needsTarget = state.rates[index] > 0 || state.nextRates?.[index] > 0;
+  const target = el('share-target').value === '' ? null : Number(el('share-target').value);
+  if (needsTarget && (target === null || target === index || !activeAccount(target))) {
+    status.textContent = 'Escoge la cuenta que recibirá su porcentaje para los próximos ingresos.';
+    el('share-target').focus();
+    return;
+  }
+  const detail = needsTarget ? ' Su porcentaje para futuros ingresos pasará a '+state.accounts[target]+'.' : '';
+  if (!confirm('¿Eliminar «'+name+'» de las cuentas activas? Se conservarán sus saldos e historial.'+detail)) return;
+  const redistribute = rates => rates && rates.map((r,i) => i === index ? 0 : i === target ? r+rates[index] : r);
+  finishBankEdit({...state,removedAccounts:[...(state.removedAccounts ?? []),index],rates:redistribute(state.rates),
+    nextRates:redistribute(state.nextRates),coupleSavings:state.coupleSavings?.account === index ? null : state.coupleSavings},
+    'Cuenta eliminada. Puedes consultar sus registros en el historial.');
+});
+
+el('bank-account-form').addEventListener('submit',event => {
+  event.preventDefault();
+  const field = el('bank-account-name');
+  const status = el('bank-account-status');
+  const name = field.value.trim();
+  if (!name || name.length > 60) {
+    status.textContent = 'Escribe un nombre de hasta 60 caracteres.';
+    return;
+  }
+  const key = accountKey(name);
+  if (state.accounts.some(account => accountKey(account) === key)) {
+    status.textContent = 'Ese nombre ya pertenece a una cuenta activa o eliminada.';
+    return;
+  }
+  bankAccountSync = el('bank-account-sync');
+  if (!save(extendAccounts(state,[name]))) {
+    status.textContent = 'Revisa la sesión o la sincronización en Respaldo y sesión.';
+    return;
+  }
+  field.value = '';
+  renderSettings();
+  renderOpening();
+  render();
+  status.textContent = '«'+name+'» se añadió a la tabla de saldos y a los selectores de cuentas.';
+});
+
 el('day').value = localDay();
 el('report-start').value = localDay().slice(0,4)+'-01-01';
 el('report-end').value = localDay();
-el('report-account').innerHTML = '<option value="">Todas las cuentas</option>'+options();
+
 el('report-form').addEventListener('submit',event => {
   event.preventDefault();
   const start = el('report-start').value;
@@ -971,13 +1970,9 @@ el('report-form').addEventListener('submit',event => {
   downloadFile(reportCsv(rows),'text/csv;charset=utf-8','Mara-Money-movimientos-'+start+'-a-'+end+'.csv');
   say('Reporte descargado con '+rows.length+' movimientos.');
 });
-el('source').innerHTML = options();
-el('source').selectedIndex = -1;
-el('source').insertAdjacentHTML('afterbegin','<option value="" disabled selected>Selecciona una cuenta</option>');
-el('source').value = '';
 el('source').required = true;
 el('expense-day').value = el('day').value;
-el('expense-account').innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
+
 el('expense-category').innerHTML = expenseOptions();
 el('expenses').addEventListener('change',event => {
   const field = event.target;
@@ -994,6 +1989,24 @@ el('expenses').addEventListener('change',event => {
     field.value = state.expenses[index].category || '';
   }
 });
+el('expenses').addEventListener('submit',event => {
+  const form = event.target;
+  if (!form.matches('form[data-expense-index]')) return;
+  event.preventDefault();
+  const index = Number(form.dataset.expenseIndex);
+  const day = form.elements.namedItem('day').value;
+  if (!boundedInt(index,0,state.expenses.length-1) || !validDay(day)) {
+    say('Verifica la fecha del gasto.',true);
+    return;
+  }
+  if (day === state.expenses[index].day) return;
+  const expenses = state.expenses.map((expense,i) => i === index ? {...expense,day} : expense);
+  if (save({...state,expenses})) {
+    render();
+    el('expense-date-'+index).focus();
+    say('Fecha del gasto actualizada.');
+  }
+});
 el('expense').addEventListener('submit',event => {
   event.preventDefault();
   const day = el('expense-day').value;
@@ -1003,7 +2016,7 @@ el('expense').addEventListener('submit',event => {
   const note = el('expense-note').value.trim();
   const category = el('expense-category').value;
   if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !accountValue
-      || !boundedInt(account,0,accounts.length-1) || !note || note.length > 120 || !validExpenseCategory(category)) {
+      || !boundedInt(account,0,state.accounts.length-1) || !note || note.length > 120 || !validExpenseCategory(category)) {
     say('Verifica la fecha, el importe, la cuenta y el concepto del gasto.',true);
     return;
   }
@@ -1016,12 +2029,13 @@ el('expense').addEventListener('submit',event => {
     el('expense-note').value = '';
     el('expense-category').value = '';
     render();
-    say('Gasto registrado en '+accounts[account]+'.');
+    say('Gasto registrado en '+state.accounts[account]+'.');
   }
 });
 el('opening-form').addEventListener('submit',event => {
   event.preventDefault();
-  const opening = accounts.map((_,index) => {
+  const opening = state.accounts.map((_,index) => {
+    if (!activeAccount(index)) return state.opening[index];
     const value = el('opening-'+index).value.trim();
     return value.startsWith('-') ? -units(value.slice(1)) : units(value || '0');
   });
@@ -1036,47 +2050,90 @@ el('opening-form').addEventListener('submit',event => {
   }
 });
 el('amount').addEventListener('input',renderPreview);
+el('day').addEventListener('input',renderPreview);
+for (const link of document.querySelectorAll('a[href="#settings"]')) {
+  link.addEventListener('click',() => { el('settings').open = true; });
+}
 el('source').addEventListener('change',renderPreview);
 el('entry').addEventListener('submit',event => {
   event.preventDefault();
   const day = el('day').value;
   const amount = units(el('amount').value);
   const source = el('source').value === '' ? -1 : Number(el('source').value);
-  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !el('source').value || !boundedInt(source,0,accounts.length-1)) {
+  if (!validDay(day) || !boundedInt(amount,1,maxIncome) || !el('source').value || !boundedInt(source,0,state.accounts.length-1)) {
     say('Verifica la fecha, la cuenta y el ingreso. El monto debe estar entre $0.01 y $1,000,000, con hasta dos decimales.',true);
-    return;
-  }
-  if (state.entries.some(entry => entry.day === day)) {
-    say('Ya hay un ingreso registrado para ese día. Cada fecha admite un total diario.',true);
     return;
   }
   if (state.entries.length >= maxEntries) {
     say('Se alcanzó el límite de registros de esta copia.',true);
     return;
   }
-  const entry = {day,amount,source,rates:[...state.rates],parts:allocate(amount,state.rates),done:accounts.map(() => false)};
+  const rates = [...incomeRates(day)];
+  const entry = {day,amount,source,rates,parts:allocate(amount,rates),done:state.accounts.map(() => false)};
+  const entryIndex = state.entries.length;
   if (save({...state,entries:[...state.entries,entry]})) {
     el('amount').value = '';
-    render(day);
+    render(entryIndex);
     say('Ingreso registrado. Puedes actualizar las transferencias en el historial.');
   }
 });
+el('reset-balances').addEventListener('click',() => {
+  if (!confirm('¿Poner en $0 los saldos registrados y previstos de todas tus cuentas? Los ingresos, gastos y transferencias actuales quedarán en el historial. Las transferencias pendientes de esos ingresos se archivarán.')) return;
+  const archive = records => records.map(record => ({...record,archived:true}));
+  if (save({...state,opening:state.accounts.map(() => 0),entries:archive(state.entries),
+      expenses:archive(state.expenses),manualTransfers:archive(state.manualTransfers)})) {
+    renderOpening();
+    render();
+    say('Balances restablecidos a $0.');
+  }
+});
+const recordLabels = {entries:'el ingreso',expenses:'el gasto',manualTransfers:'la transferencia'};
+for (const section of ['transfers','history','expenses','manual-history']) {
+  el(section).addEventListener('click',event => {
+    const button = event.target.closest('button[data-remove]');
+    if (!button) return;
+    const collection = button.dataset.remove;
+    const index = Number(button.dataset.record);
+    const record = state[collection][index];
+    if (!record) return;
+    let records;
+    if (button.hasAttribute('data-part')) {
+      const part = Number(button.dataset.part);
+      if (record.archived || record.cancelled?.includes(part)) return;
+      if (!confirm('¿Eliminar la transferencia de '+money(record.parts[part])+' hacia '+state.accounts[part]+' del ingreso del '+record.day+'? Ese importe quedará en '+state.accounts[record.source]+'.')) return;
+      const done = [...record.done];
+      done[part] = false;
+      const completedOn = record.completedOn?.map((date,i) => i === part ? null : date);
+      records = state.entries.map((item,i) => i === index ? {...record,done,...(completedOn ? {completedOn} : {}),cancelled:[...(record.cancelled ?? []),part]} : item);
+    } else {
+      const detail = collection === 'entries' ? ' También se eliminarán sus transferencias asociadas.' : '';
+      if (!confirm('¿Eliminar '+recordLabels[collection]+' de '+money(record.amount)+' del '+record.day+'?'+detail)) return;
+      records = state[collection].filter((_,i) => i !== index);
+    }
+    if (save({...state,[collection]:records})) {
+      render();
+      say('Registro eliminado.');
+    }
+  });
+}
 function updateTransfer(event) {
-  const button = event.target.closest('button[data-day]');
+  const button = event.target.closest('button[data-entry-index]');
   if (!button) return;
-  const {day,index} = button.dataset;
-  const entry = state.entries.find(item => item.day === day);
+  const entryIndex = Number(button.dataset.entryIndex);
+  const index = Number(button.dataset.index);
+  const entry = state.entries[entryIndex];
+  if (!entry || !boundedInt(index,0,entry.parts.length-1) || index === entry.source || !entry.parts[index]) return;
   const done = [...entry.done];
   done[index] = !done[index];
-  const completedOn = entry.completedOn ? [...entry.completedOn] : accounts.map(() => null);
+  const completedOn = entry.completedOn ? [...entry.completedOn] : state.accounts.map(() => null);
   completedOn[index] = done[index] ? localDay() : null;
-  if (save({...state,entries:state.entries.map(item => item === entry ? {...entry,done,completedOn} : item)})) {
-    render(day);
+  if (save({...state,entries:state.entries.map((item,i) => i === entryIndex ? {...entry,done,completedOn} : item)})) {
+    render(entryIndex);
     if (event.currentTarget?.id === 'transfers') {
-      const nextPending = el('transfers').querySelectorAll('button[data-day]')[0];
+      const nextPending = el('transfers').querySelectorAll('button[data-entry-index]')[0];
       (nextPending ?? el('transfers-title')).focus();
     } else {
-      const nextButton = [...el('history').querySelectorAll('button[data-day]')].find(item => item.dataset.day === day && item.dataset.index === index);
+      const nextButton = [...el('history').querySelectorAll('button[data-entry-index]')].find(item => Number(item.dataset.entryIndex) === entryIndex && Number(item.dataset.index) === index);
       nextButton?.focus();
     }
     say(done[index] ? 'Transferencia completada.' : 'Transferencia marcada como pendiente.');
@@ -1084,9 +2141,7 @@ function updateTransfer(event) {
 }
 el('manual-day').value = localDay();
 el('manual-day').max = localDay();
-for (const id of ['manual-source','manual-destination']) {
-  el(id).innerHTML = '<option value="" disabled selected>Selecciona una cuenta</option>'+options();
-}
+
 el('manual-transfer').addEventListener('submit',event => {
   event.preventDefault();
   const day = el('manual-day').value;
@@ -1097,7 +2152,7 @@ el('manual-transfer').addEventListener('submit',event => {
   const destination = Number(to);
   const note = el('manual-note').value.trim();
   if (!validDay(day) || day > localDay() || !boundedInt(amount,1,maxIncome) || !from || !to
-      || !boundedInt(source,0,accounts.length-1) || !boundedInt(destination,0,accounts.length-1)
+      || !boundedInt(source,0,state.accounts.length-1) || !boundedInt(destination,0,state.accounts.length-1)
       || source === destination || note.length > 120) {
     say('Verifica la fecha, el importe y que las dos cuentas sean distintas.',true);
     return;
@@ -1118,24 +2173,34 @@ el('manual-transfer').addEventListener('submit',event => {
 el('history').addEventListener('click',updateTransfer);
 el('transfers').addEventListener('click',updateTransfer);
 el('configuration').addEventListener('input',event => {
-  if (event.target.matches('.rate')) updateTotal();
+  if (event.target.matches('.rate,.next-rate')) updateTotal();
 });
 el('configuration').addEventListener('click',event => {
   if (event.target.id !== 'load-travel-plan') return;
-  fields('.rate').forEach((input,index) => { input.value = String(travelPlanRates[index]/100); });
+  const active = activeIndices();
+  if (travelPlanRates.some((rate,i) => rate && !activeAccount(i))) {
+    say('Este plan incluye una cuenta eliminada. Ajusta los porcentajes de tus cuentas activas.',true);
+    return;
+  }
+  fields('.rate').forEach((input,index) => { input.value = String((travelPlanRates[active[index]] ?? 0)/100); });
   updateTotal();
-  say('Plan temporal cargado. Pulsa Guardar configuración para aplicarlo a los próximos ingresos.');
+  say('Plan temporal cargado en la columna hasta el 27 de noviembre. Pulsa Guardar configuración para aplicarlo.');
 });
 el('configuration').addEventListener('submit',event => {
   event.preventDefault();
   const rates = readRates();
-  if (!validRates(rates)) {
+  if (!validRates(rates,state.accounts.length)) {
     say('Cada porcentaje debe estar entre 0 y 100, y el total debe ser exactamente 100 %. ',true);
     return;
   }
-  const purposes = fields('.purpose').map(input => input.value.trim());
+  const nextRates = readNextRates();
+  if (nextRates !== null && !validRates(nextRates,state.accounts.length)) {
+    say('El reparto desde el 28 de noviembre debe sumar exactamente 100 %.',true);
+    return;
+  }
+  const purposes = accountValues('.purpose',input => input.value.trim(),index => state.purposes[index]);
   const provisional = state.provisional && rates.every((rate,index) => rate === state.rates[index]);
-  if (save({...state,rates,purposes,provisional})) {
+  if (save({...state,rates,nextRates,purposes,provisional})) {
     render();
     say('Categorías y reparto guardados.');
   }
@@ -1152,14 +2217,23 @@ el('export').addEventListener('click',() => {
   downloadFile(JSON.stringify(state,null,2),'application/json','Mara-Money-respaldo-'+el('day').value+'.json');
 });
 el('backup').addEventListener('change',async event => {
+  const epoch = cloudEpoch;
   const file = event.target.files[0];
   event.target.value = '';
   if (!file) return;
   try {
     if (file.size > 50*1024*1024) throw Error('El archivo excede el tamaño permitido.');
-    const restored = validate(JSON.parse(await file.text()));
-    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos y '+restored.expenses.length+' gastos. ¿Reemplazar los registros y la configuración de esta copia?')) return;
+    const raw = JSON.parse(await file.text());
+    if (epoch !== cloudEpoch) return;
+    let restored = validate(raw);
+    if (!Object.hasOwn(raw,'accounts')) {
+      restored = extendAccounts(restored,state.accounts.slice(baseAccounts.length));
+      if (!Object.hasOwn(raw,'coupleFinances')) restored.coupleFinances = state.coupleFinances;
+      if (!Object.hasOwn(raw,'coupleSavings')) restored.coupleSavings = state.coupleSavings;
+    }
+    if (!confirm('El respaldo contiene '+restored.entries.length+' ingresos, '+restored.expenses.length+' gastos y '+restored.creditCards.length+' tarjetas y '+restored.coupleFinances.length+' movimientos de pareja. ¿Reemplazar los registros y la configuración de esta cuenta?')) return;
     if (save(restored,true)) {
+      resetCardForms();
       renderSettings();
       renderOpening();
       render();
@@ -1222,6 +2296,55 @@ fontInput.addEventListener('change',async () => {
 });
 restoreStickerFont();
 // Do not expose the dashboard until authentication and cloud loading complete.
+const quickBar = document.querySelector('.nav-bar');
+const quickMenu = el('quick-menu');
+const quickSummary = quickMenu.querySelector('summary');
+const quickDestinations = [...quickMenu.querySelectorAll('a[href^="#"]')].map(link => ({
+  link,section:el(link.hash.slice(1))
+}));
+let quickLinkUpdateQueued = false;
+function markQuickLink(current) {
+  el('quick-current').textContent = '· '+current.textContent;
+  for (const {link} of quickDestinations) {
+    if (link === current) link.setAttribute('aria-current','location');
+    else link.removeAttribute('aria-current');
+  }
+}
+function scheduleQuickLinkUpdate() {
+  if (quickLinkUpdateQueued || !ready) return;
+  quickLinkUpdateQueued = true;
+  const update = () => {
+    quickLinkUpdateQueued = false;
+    if (!ready) return;
+    const threshold = Math.max(0,quickBar.getBoundingClientRect().bottom) + 48;
+    const bottom = window.scrollY > 0 && window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2;
+    const current = bottom ? quickDestinations.at(-1)
+      : quickDestinations.findLast(({section}) => section.getBoundingClientRect().top <= threshold) ?? quickDestinations[0];
+    markQuickLink(current.link);
+  };
+  if (window.requestAnimationFrame) window.requestAnimationFrame(update);
+  else window.setTimeout(update,0);
+}
+for (const {link,section} of quickDestinations) {
+  section.tabIndex = -1;
+  link.addEventListener('click',() => {
+    quickMenu.open = false;
+    markQuickLink(link);
+    section.focus({preventScroll:true});
+  });
+}
+document.addEventListener('click',event => {
+  if (quickMenu.open && !quickMenu.contains(event.target)) quickMenu.open = false;
+});
+document.addEventListener('keydown',event => {
+  if (event.key === 'Escape' && quickMenu.open) {
+    quickMenu.open = false;
+    quickSummary.focus();
+  }
+});
+window.addEventListener('scroll',scheduleQuickLinkUpdate,{passive:true});
+window.addEventListener('resize',scheduleQuickLinkUpdate);
+
 cloudLock();
 renderSettings();
 renderOpening();
@@ -1242,8 +2365,11 @@ el('cloud-signup').addEventListener('click',async () => {
   el('cloud-password').value = '';
   cloudMessage(error ? 'No se pudo crear la cuenta: '+error.message : data.session ? 'Cuenta creada. Cargando tus datos…' : 'Revisa tu correo y confirma la cuenta. Después inicia sesión.',!!error);
 });
+document.querySelector('a[href="#backup-section"]').addEventListener('click',() => {
+  el('backup-section').open = true;
+});
 el('cloud-signout').addEventListener('click',async () => {
-  if (cloudPending || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
+  if (cloudPending || cloudInFlight || cloudWriting || cloudFailed) return cloudMessage('Hay cambios pendientes. Sincroniza antes de cerrar sesión.',true);
   await cloudClient.auth.signOut();
 });
 el('cloud-retry').addEventListener('click',() => {
@@ -1253,7 +2379,7 @@ el('cloud-retry').addEventListener('click',() => {
   void cloudFlush();
 });
 window.addEventListener('beforeunload',event => {
-  if (cloudPending || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
+  if (cloudPending || cloudInFlight || cloudWriting || cloudFailed) { event.preventDefault(); event.returnValue = ''; }
 });
 (async () => {
   if (!window.supabase?.createClient) return cloudMessage('No se pudo cargar la librería de Supabase. Verifica Internet y recarga.',true);
@@ -1261,7 +2387,7 @@ window.addEventListener('beforeunload',event => {
     cloudClient = window.supabase.createClient(cloudUrl,cloudPublicKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     cloudClient.auth.onAuthStateChange((event,session) => {
       if (event === 'SIGNED_OUT') {
-        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudFailed = false;
+        ++cloudEpoch; cloudUser = null; cloudPending = null; cloudInFlight = null; cloudFailed = false;
         state = initial(); cloudLock(); renderSettings(); renderOpening(); render();
         cloudMessage('Inicia sesión para ver tus datos.');
       } else if (event === 'SIGNED_IN' && session?.user && session.user.id !== cloudUser?.id) {
@@ -1278,3 +2404,6 @@ window.addEventListener('beforeunload',event => {
 </script>
 </body>
 </html>
+
+
+
